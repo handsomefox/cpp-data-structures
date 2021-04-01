@@ -94,9 +94,9 @@ public:
 
   const T &operator[](size_t index) const { return data_[index]; }
   T &operator[](size_t index) { return data_[index]; }
-  Vector<T> &operator=(Vector) = delete; // for now
-  Vector<T> &operator=(const Vector &) = delete; // for now
-  Vector<T> &operator=(Vector &&) noexcept = delete; // for now
+  T &operator=(Vector) = delete; // for now
+  T &operator=(const Vector &) = delete; // for now
+  T &operator=(Vector &&) noexcept = delete; // for now
 
 private:
   T *data_ = nullptr;
