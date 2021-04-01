@@ -5,25 +5,13 @@ namespace mango {
 template <typename T> class Vector {
 public:
   Vector() { reserve(2); }
-
   explicit Vector(const size_t capacity) { reserve(capacity); }
-
+  Vector(const Vector&) = delete; // for now
+  Vector(Vector &&) noexcept = delete; // for now
   ~Vector() { delete[] data_; }
 
-  Vector(const Vector &) {}
-
-  Vector<T> &operator=(Vector) {}
-
-  Vector<T> &operator=(const Vector &) {}
-
-  Vector(Vector &&) noexcept {}
-
-  Vector<T> &operator=(Vector &&) noexcept {}
-
   T &front() { return data_[0]; }
-
   T &back() { return data_[size_ - 1]; }
-
   T *data() { return data_; }
 
   void reserve(const size_t new_capacity) {
@@ -44,11 +32,9 @@ public:
   }
 
   size_t size() { return size_; }
-
   size_t size() const { return size_; }
 
   size_t capacity() { return capacity_; }
-
   size_t capacity() const { return capacity_; }
 
   void clear() {
@@ -107,8 +93,10 @@ public:
   }
 
   const T &operator[](size_t index) const { return data_[index]; }
-
   T &operator[](size_t index) { return data_[index]; }
+  Vector<T> &operator=(Vector) = delete; // for now
+  Vector<T> &operator=(const Vector &) = delete; // for now
+  Vector<T> &operator=(Vector &&) noexcept = delete; // for now
 
 private:
   T *data_ = nullptr;
