@@ -41,7 +41,7 @@ public:
     data_ = newData;
   }
 
-  bool empty() const { return size == 0 ? true : false; }
+  bool empty() const { return size_ == 0 ? true : false; }
 
   size_t size() { return size_; }
   size_t size() const { return size_; }
