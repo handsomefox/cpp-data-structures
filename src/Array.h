@@ -5,15 +5,11 @@ template <typename T, size_t N> class Array {
 public:
   Array() = default;
 
-  static constexpr bool empty() noexcept {
-    if (N == 0)
-      return true;
-    return false;
-  }
+  constexpr bool empty() noexcept { return N == 0 ? true : false; }
 
   constexpr void set_null() noexcept { memset(data_, 0, N * sizeof(T)); }
 
-  static constexpr size_t size() noexcept { return N; }
+  constexpr size_t size() noexcept { return N; }
 
   constexpr T *data() noexcept { return data_; }
   constexpr const T *data() const noexcept { return data_; }

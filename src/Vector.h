@@ -41,18 +41,12 @@ public:
     data_ = newData;
   }
 
-  bool empty() const {
-    if (size_ == 0)
-      return true;
-    return false;
-  }
+  bool empty() const { return size == 0 ? true : false; }
 
   size_t size() { return size_; }
-
   size_t size() const { return size_; }
 
   size_t capacity() { return capacity_; }
-
   size_t capacity() const { return capacity_; }
 
   void clear() {
@@ -62,30 +56,25 @@ public:
   }
 
   void push_back(T data) {
-    if (size_ >= capacity_) {
+    if (size_ >= capacity_)
       reserve(capacity_ + capacity_ / 2);
-    }
+
     data_[size_++] = data;
   }
 
   template <typename... Args> T &emplace_back(Args &&...args) {
-    if (size_ >= capacity_) {
+    if (size_ >= capacity_)
       reserve(capacity_ + capacity_ / 2);
-    }
 
     data_[size_] = T(std::forward<Args>(args)...);
-
     return data_[size_++];
   }
 
   void pop_back() {
-    T *newData = new T[capacity_];
-    for (size_t i = 0; i < size_ - 1; ++i) {
-      newData[i] = data_[i];
+    if (size_ > 0) {
+      size_--;
+      data_[size_].~T();
     }
-    size_ = size_ - 1;
-    delete[] data_;
-    data_ = newData;
   }
 
   void resize(const size_t size) {
