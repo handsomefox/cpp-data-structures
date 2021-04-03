@@ -5,24 +5,40 @@ namespace mango {
 template <typename T> class Vector {
 public:
   Vector() { reserve(2); }
+
   explicit Vector(const size_t capacity) { reserve(capacity); }
-  Vector(const Vector&) = delete; // for now
-  Vector(Vector &&) noexcept = delete; // for now
+
+  Vector(const Vector &vec) {
+    size_ = vec.size_;
+    capacity_ = vec.capacity_;
+
+    data_ = new T[sizeof &vec.data_];
+    memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
+  }
+
+  Vector(Vector &&vec) noexcept {
+    size_ = vec.size_;
+    capacity_ = vec.capacity_;
+    data_ = std::move(vec.data_);
+  }
+
   ~Vector() { delete[] data_; }
 
   T &front() { return data_[0]; }
+
   T &back() { return data_[size_ - 1]; }
+
   T *data() { return data_; }
 
   void reserve(const size_t new_capacity) {
-    T *newData = new T[new_capacity];
+    capacity_ += new_capacity;
+    T *newData = new T[capacity_];
 
     for (size_t i = 0; i < size_; ++i)
       newData[i] = data_[i];
 
     delete[] data_;
     data_ = newData;
-    capacity_ = new_capacity;
   }
 
   bool empty() const {
@@ -32,9 +48,11 @@ public:
   }
 
   size_t size() { return size_; }
+
   size_t size() const { return size_; }
 
   size_t capacity() { return capacity_; }
+
   size_t capacity() const { return capacity_; }
 
   void clear() {
@@ -93,10 +111,33 @@ public:
   }
 
   const T &operator[](size_t index) const { return data_[index]; }
-  T &operator[](size_t index) { return data_[index]; }
-  T &operator=(Vector) = delete; // for now
-  T &operator=(const Vector &) = delete; // for now
-  T &operator=(Vector &&) noexcept = delete; // for now
+
+  constexpr T &operator[](size_t index) { return data_[index]; }
+
+  constexpr Vector &operator=(const Vector &vec) {
+    if (this == &vec)
+      return *this;
+
+    this->size_ = vec.size_;
+    this->capacity_ = vec.capacity_;
+
+    data_ = new T[sizeof &vec.data_];
+    memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
+
+    return *this;
+  }
+
+  constexpr Vector &operator=(Vector &&vec) noexcept {
+    if (this == &vec)
+      return *this;
+
+    size_ = vec.size_;
+    capacity_ = vec.capacity_;
+
+    data_ = vec.data_;
+
+    return *this;
+  }
 
 private:
   T *data_ = nullptr;
@@ -106,10 +147,11 @@ private:
 };
 
 static void RunVectorTest() {
+  std::cout << "Vector test:\n";
   Vector<int> vec;
   vec.print();
   std::cout << "Empty: " << vec.empty() << "\n";
-
+  vec.reserve(100);
   std::cout << "Adding data to Vector\n";
   vec.push_back(1);
   vec.emplace_back(2);
@@ -179,5 +221,11 @@ static void RunVectorTest() {
 
   std::cout << "Print (expected == nothing)\n";
   vec2.print();
+
+  Vector<int> vec3;
+  vec3[0] = 2;
+  auto vec4 = vec3;
+  std::cout << "vec3[0]: " << vec3[0] << "\n";
+  std::cout << "vec4[0]: " << vec4[0] << "\n";
 }
 } // namespace mango
