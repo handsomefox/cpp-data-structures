@@ -22,19 +22,4 @@ public:
 private:
   T data_[N];
 };
-
-static void RunArrayTest() {
-  std::cout << "Array test:\n";
-  Array<int, 2> array{};
-  std::cout << "array.empty() " << array.empty() << "\n";
-  array.set_null();
-  std::cout << "All array elements are set to 0\n";
-  for (size_t i = 0; i < array.size(); ++i)
-    std::cout << "Array element " << i << " = " << array[i] << "\n";
-  array[0] = 2;
-  array[1] = 2;
-  std::cout << "All array elements are set to 2\n";
-  for (size_t i = 0; i < array.size(); ++i)
-    std::cout << "Array element " << i << " = " << array[i] << "\n";
-}
 } // namespace mango

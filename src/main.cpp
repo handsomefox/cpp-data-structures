@@ -1,6 +1,4 @@
-#include "src/Array.h"
-#include "src/String.h"
-#include "src/Vector.h"
+#include "Test/Test.hpp"
 #include <iostream>
 
 int main() {
