@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "../Array.hpp"
-#include "../String.hpp"
-#include "../Vector.hpp"
+#include "Array.hpp"
+#include "String.hpp"
+#include "Vector.hpp"
 
 void mango::RunArrayTest() {
   std::cout << "Array test:\n";
