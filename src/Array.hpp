@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARRAY_HPP
+#define ARRAY_HPP
 #include <iostream>
 namespace mango {
 template <typename T, size_t N> class Array {
@@ -23,3 +24,4 @@ private:
   T data_[N];
 };
 } // namespace mango
+#endif // ARRAY_HPP

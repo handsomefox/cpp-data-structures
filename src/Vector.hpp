@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VECTOR_HPP
+#define VECTOR_HPP
 #include <iostream>
 
 namespace mango {
@@ -135,3 +136,4 @@ private:
   size_t capacity_ = 0;
 };
 } // namespace mango
+#endif // VECTOR_HPP
