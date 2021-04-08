@@ -7,24 +7,26 @@
 namespace mango {
 class String {
 public:
-  String() = default;
+  String() { reserve(24); }
+
   String(const char *str) {
     set_all_params(strlen(str) + 1);
-    string_ = alloc(size());
+    alloc(size());
     cpy_str(str, size());
   }
+
+  String(const String &other) {
+    set_all_params(other.size());
+    alloc(size());
+    cpy_str(other.string_, size());
+  }
+
   String(String &&other) noexcept {
     set_all_params(other.size());
     assign_str(other.string_);
   }
-  String(const String &other) {
-    set_all_params(other.size());
-    string_ = alloc(size());
-    cpy_str(other.string_, size());
-  }
-  ~String() { delete[] string_; }
 
-  void print() const { std::cout << c_str() << "\n"; }
+  ~String() { delete[] string_; }
 
   char &at(const size_t pos) {
     if (length() < pos)
@@ -34,16 +36,18 @@ public:
 
   String &append(const String &str) {
     const auto newSize = str.size() + size();
-    auto *const newString = alloc(newSize);
+    realloc(newSize);
 
-    newString[0] = 0;
+    add_strs(string_, newSize, str.string_);
+    set_all_params(newSize);
 
-    if (string_ != nullptr)
-      cpy_str(newString, newSize, string_);
+    return *this;
+  }
+  String &append(const char *str) {
+    const auto newSize = strlen(str) + size();
+    realloc(newSize);
 
-    add_strs(newString, newSize, str.string_);
-
-    assign_str(newString);
+    add_strs(string_, newSize, str);
     set_all_params(newSize);
 
     return *this;
@@ -52,10 +56,7 @@ public:
   String &append(const String &str, const size_t subpos,
                  const size_t sublen = npos) {
     const auto newSize = str.size() + sublen;
-    auto *newString = alloc(newSize);
-    newString[0] = 0;
-
-    cpy_str(newString, newSize, string_);
+    realloc(newSize);
 
     auto *temp = new char[sublen + 1];
     temp[0] = 0;
@@ -64,36 +65,16 @@ public:
       temp[i - subpos] = str.at(i);
 
     temp[sublen] = 0;
-    add_strs(newString, newSize, temp);
+
+    add_strs(string_, newSize, temp);
+    set_all_params(newSize);
 
     delete[] temp;
-
-    assign_str(newString);
-    set_all_params(newSize);
-
-    return *this;
-  }
-  String &append(const char *str) {
-    const auto newSize = strlen(str) + size_;
-    auto *newString = new char[newSize];
-    newString[0] = 0;
-
-    if (string_ != nullptr)
-      cpy_str(newString, newSize, string_);
-
-    add_strs(newString, newSize, str);
-
-    assign_str(newString);
-    set_all_params(newSize);
-
     return *this;
   }
   String &append(const char *str, const size_t n) {
     const auto newSize = size_ + n;
-    auto *newString = alloc(newSize);
-    newString[0] = 0;
-
-    cpy_str(newString, newSize, string_);
+    realloc(newSize);
 
     auto *temp = new char[n + 1];
     temp[0] = 0;
@@ -102,13 +83,11 @@ public:
       temp[i] = str[i];
 
     temp[n] = 0;
-    add_strs(newString, newSize, temp);
 
-    delete[] temp;
-
-    assign_str(newString);
+    add_strs(string_, newSize, temp);
     set_all_params(newSize);
 
+    delete[] temp;
     return *this;
   }
   String &append(const size_t n, const char c) {
@@ -120,17 +99,12 @@ public:
     str[n] = 0;
 
     const auto newSize = size_ + n;
-    auto *newString = alloc(newSize);
-    newString[0] = 0;
+    realloc(newSize);
 
-    cpy_str(newString, newSize, string_);
-    add_strs(newString, newSize, str);
-
-    delete[] str;
-
-    assign_str(newString);
+    add_strs(string_, newSize, str);
     set_all_params(newSize);
 
+    delete[] str;
     return *this;
   }
 
@@ -144,25 +118,22 @@ public:
     if (!empty())
       return string_[length_ - 1];
     else
-      __debugbreak();
+      return string_[npos];
   }
   char &back() const {
     if (!empty())
       return string_[length_ - 1];
-    else
-      __debugbreak();
+    return string_[npos];
   }
   char &front() const {
     if (!empty())
       return string_[0];
-    else
-      __debugbreak();
+    return string_[npos];
   }
   char &front() {
     if (!empty())
       return string_[0];
-    else
-      __debugbreak();
+    return string_[npos];
   }
 
   bool empty() const { return length_ == 0; }
@@ -182,10 +153,8 @@ public:
   void shrink_to_fit() {
     if (capacity() == size())
       return;
-    auto *newString = alloc(size());
-    cpy_str(newString, size(), string_);
+    alloc(size());
     capacity_ = size_;
-    assign_str(newString);
   }
 
   size_t length() const { return length_; }
@@ -196,11 +165,18 @@ public:
       return *this;
 
     set_all_params(other.size());
+    realloc(size());
+    cpy_str(string_, size(), other.string_);
 
-    auto *newString = alloc(size());
-    cpy_str(newString, size_, other.string_);
+    return *this;
+  }
+  String &operator=(const char *str) {
+    if (this->c_str() == str)
+      return *this;
 
-    assign_str(newString);
+    set_all_params(strlen(str) + 1);
+    realloc(size());
+    cpy_str(string_, capacity_, str);
 
     return *this;
   }
@@ -209,19 +185,8 @@ public:
     if (this == &other)
       return *this;
 
-    assign_str(other.string_);
     set_all_params(other.size());
-
-    return *this;
-  }
-
-  String &operator=(const char *str) {
-    if (this->c_str() == str)
-      return *this;
-
-    set_all_params(strlen(str) + 1);
-    string_ = alloc(size());
-    cpy_str(string_, size(), str);
+    assign_str(other.string_);
 
     return *this;
   }
@@ -232,29 +197,27 @@ public:
   bool operator==(const char *other) const { return !strcmp(string_, other); }
 
   String operator+(const String &other) const {
-    const auto newSize = length_ + other.length_ + 1;
-    auto *newString = alloc(newSize);
+    const auto newSize = size() + other.length();
+    auto *temp_str = new char[newSize];
+    temp_str[0] = 0;
 
-    newString[0] = 0;
+    cpy_str(temp_str, newSize, string_);
+    add_strs(temp_str, newSize, other.string_);
 
-    cpy_str(newString, newSize, string_);
-    add_strs(newString, newSize, other.string_);
-
-    String ret(newString);
-    delete[] newString;
+    String ret(temp_str);
+    delete[] temp_str;
     return ret;
   }
   String operator+(const char *other) const {
-    const auto newSize = length_ + strlen(other) + 1;
-    auto *newString = alloc(newSize);
+    const auto newSize = size() + strlen(other);
+    auto *temp_str = new char[newSize];
+    temp_str[0] = 0;
 
-    newString[0] = 0;
+    cpy_str(temp_str, newSize, string_);
+    add_strs(temp_str, newSize, other);
 
-    cpy_str(newString, newSize, string_);
-    add_strs(newString, newSize, other);
-
-    String ret(newString);
-    delete[] newString;
+    String ret(temp_str);
+    delete[] temp_str;
     return ret;
   }
 
@@ -273,7 +236,7 @@ public:
     const auto newLength = length;
     const auto c = ' ';
 
-    auto *newString = alloc(newSize);
+    auto *newString = new char[newSize];
 
     if (newLength < this->length()) {
       for (size_t i = 0; i < newSize; ++i)
@@ -288,7 +251,6 @@ public:
 
     set_all_params(newSize);
     newString[newSize - 1] = '\0';
-
     assign_str(newString);
   }
   void resize(const size_t length, const char c) {
@@ -298,7 +260,7 @@ public:
     const auto newSize = length + 1;
     const auto newLength = length;
 
-    auto *newString = alloc(newSize);
+    auto *newString = new char[newSize];
 
     if (newLength < this->length()) {
       for (size_t i = 0; i < newSize; ++i)
@@ -318,11 +280,16 @@ public:
   }
 
   void reserve(const size_t capacity = 0) {
-    auto *newString = alloc(capacity);
-    cpy_str(newString, capacity, string_);
+    realloc(capacity);
     capacity_ = capacity;
-    assign_str(newString);
   }
+
+  void push_back(const char c) { append(1, c); }
+
+  // size_t find(const String &str, size_t pos = 0) const noexcept {}
+  // size_t find(const char *s, size_t pos = 0) const {}
+  // size_t find(const char *s, size_t pos, size_t n) const {}
+  // size_t find(char c, size_t pos = 0) const noexcept {}
 
 private:
   char *string_ = nullptr;
@@ -334,7 +301,28 @@ private:
     delete[] string_;
     string_ = string;
   }
-  static char *alloc(const size_t size) { return new char[size]; }
+  void alloc(const size_t size) {
+    if (string_ == nullptr) {
+      string_ = new char[size];
+      string_[0] = 0;
+    } else if (capacity_ < size_) {
+      auto *temp = new char[size];
+      temp[0] = 0;
+      strcpy_s(temp, size, string_);
+      delete[] string_;
+      string_ = temp;
+    }
+  }
+  void realloc(const size_t size) {
+    if (capacity_ < size) {
+      auto *mem = new char[size];
+      mem[0] = 0;
+      if (string_ != nullptr)
+        strcpy_s(mem, size, string_);
+      delete[] string_;
+      string_ = mem;
+    }
+  }
   char *get_str() const { return string_; }
   char *get_str() { return string_; }
   void cpy_str(const char *other, const size_t buffer_size) const {
@@ -343,14 +331,15 @@ private:
   void cpy_str(char *dest, const size_t buffer_size, const char *other) const {
     strcpy_s(dest, buffer_size, other);
   }
-
   void add_strs(char *dest, const size_t buffer_size, const char *other) const {
     strcat_s(dest, buffer_size, other);
   }
   void set_all_params(const size_t size) {
     size_ = size;
     length_ = size - 1;
-    capacity_ = size;
+    if (capacity_ < size_) {
+      capacity_ = size_;
+    }
   }
 };
 } // namespace mango
