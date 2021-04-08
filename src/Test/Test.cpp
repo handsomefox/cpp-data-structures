@@ -45,6 +45,65 @@ void mango::RunStringTest() {
   std::cout << "Concatenated string: " << str2 + str << "\n";
 
   std::cout << "c_str() from str: " << str.c_str() << "\n";
+
+  String str3("I like to code in C");
+  std::cout << str3 << '\n';
+  std::cout << "Length: " << str3.length() << '\n';
+  std::cout << "Size: " << str3.size() << '\n';
+  std::cout << "Empty: " << str3.empty() << '\n';
+
+  const auto len = str3.length();
+
+  str3.resize(len + 2, '+');
+  std::cout << str3 << '\n';
+  std::cout << "Length: " << str3.length() << '\n';
+  std::cout << "Size: " << str3.size() << '\n';
+  std::cout << "Capacity: " << str3.capacity() << '\n';
+  std::cout << "Empty: " << str3.empty() << '\n';
+
+  str3.resize(14);
+  str3.resize(14);
+
+  for (size_t i = 0; i < str3.length(); ++i)
+    std::cout << str3.at(i);
+
+  std::cout << '\n';
+  std::cout << "Length: " << str3.length() << '\n';
+  std::cout << "Size: " << str3.size() << '\n';
+  std::cout << "Capacity: " << str3.capacity() << '\n';
+  std::cout << "Empty: " << str3.empty() << '\n';
+
+  str3.clear();
+  str3.reserve(100);
+  std::cout << str3 << '\n';
+  std::cout << "Length: " << str3.length() << '\n';
+  std::cout << "Size: " << str3.size() << '\n';
+  std::cout << "Capacity: " << str3.capacity() << '\n';
+  std::cout << "Empty: " << str3.empty() << '\n';
+
+  str3.shrink_to_fit();
+  std::cout << str3 << '\n';
+  std::cout << "Length: " << str3.length() << '\n';
+  std::cout << "Size: " << str3.size() << '\n';
+  std::cout << "Capacity: " << str3.capacity() << '\n';
+  std::cout << "Empty: " << str3.empty() << '\n';
+
+  String str5("hello world.");
+  str5.back() = '!';
+  std::cout << str5 << '\n';
+  str5.front() = 'H';
+  std::cout << str5 << '\n';
+
+  String str6;
+  const String str7 = "Writing ";
+  const String str8 = "print 10 and then 5 more";
+
+  str6.append(str7);               // "Writing "
+  str6.append(str8, 6, 3);         // "10 "
+  str6.append("dots are cool", 5); // "dots "
+  str6.append("here: ");           // "here: "
+  str6.append(10u, '.');           // ".........."
+  std::cout << str6 << '\n';
 }
 
 void mango::RunVectorTest() {
