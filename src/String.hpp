@@ -10,20 +10,20 @@ public:
   String() { reserve(24); }
 
   String(const char *str) {
-    set_all_params(strlen(str) + 1);
+    set_str_props(strlen(str) + 1);
     alloc(size());
-    strcpy_s(string_, size(),str );
+    strcpy_s(string_, size(), str);
   }
 
   String(const String &other) {
-    set_all_params(other.size());
+    set_str_props(other.size());
     alloc(size());
     strcpy_s(string_, size(), other.string_);
   }
 
   String(String &&other) noexcept {
-    set_all_params(other.size());
-    movestr(other.string_);
+    set_str_props(other.size());
+    strmove(other.string_);
   }
 
   ~String() { delete[] string_; }
@@ -35,76 +35,76 @@ public:
   }
 
   String &append(const String &str) {
-    const auto newSize = str.size() + size();
-    realloc(newSize);
+    const auto tmp_size = str.size() + size();
+    realloc(tmp_size);
 
-    strcat_s(string_, newSize, str.string_);
-    set_all_params(newSize);
+    strcat_s(string_, tmp_size, str.string_);
+    set_str_props(tmp_size);
 
     return *this;
   }
   String &append(const char *str) {
-    const auto newSize = strlen(str) + size();
-    realloc(newSize);
+    const auto tmp_size = strlen(str) + size();
+    realloc(tmp_size);
 
-    strcat_s(string_, newSize, str);
-    set_all_params(newSize);
+    strcat_s(string_, tmp_size, str);
+    set_str_props(tmp_size);
 
     return *this;
   }
 
   String &append(const String &str, const size_t subpos,
                  const size_t sublen = npos) {
-    const auto newSize = str.size() + sublen;
-    realloc(newSize);
+    const auto tmp_size = str.size() + sublen;
+    realloc(tmp_size);
 
-    auto *temp = new char[sublen + 1];
-    temp[0] = 0;
+    auto *tmp_str = new char[sublen + 1];
+    tmp_str[0] = 0;
 
     for (auto i = subpos; i < subpos + sublen; ++i)
-      temp[i - subpos] = str.at(i);
+      tmp_str[i - subpos] = str.at(i);
 
-    temp[sublen] = 0;
+    tmp_str[sublen] = 0;
 
-    strcat_s(string_, newSize, temp);
-    set_all_params(newSize);
+    strcat_s(string_, tmp_size, tmp_str);
+    set_str_props(tmp_size);
 
-    delete[] temp;
+    delete[] tmp_str;
     return *this;
   }
   String &append(const char *str, const size_t n) {
-    const auto newSize = size_ + n;
-    realloc(newSize);
+    const auto tmp_size = size_ + n;
+    realloc(tmp_size);
 
-    auto *temp = new char[n + 1];
-    temp[0] = 0;
+    auto *tmp_str = new char[n + 1];
+    tmp_str[0] = 0;
 
     for (size_t i = 0; i < n; ++i)
-      temp[i] = str[i];
+      tmp_str[i] = str[i];
 
-    temp[n] = 0;
+    tmp_str[n] = 0;
 
-    strcat_s(string_, newSize, temp);
-    set_all_params(newSize);
+    strcat_s(string_, tmp_size, tmp_str);
+    set_str_props(tmp_size);
 
-    delete[] temp;
+    delete[] tmp_str;
     return *this;
   }
   String &append(const size_t n, const char c) {
-    auto *str = new char[n + 1];
+    auto *tmp_str = new char[n + 1];
 
     for (size_t i = 0; i < n; ++i)
-      str[i] = c;
+      tmp_str[i] = c;
 
-    str[n] = 0;
+    tmp_str[n] = 0;
 
-    const auto newSize = size_ + n;
-    realloc(newSize);
+    const auto tmp_size = size_ + n;
+    realloc(tmp_size);
 
-    strcat_s(string_, newSize, str);
-    set_all_params(newSize);
+    strcat_s(string_, tmp_size, tmp_str);
+    set_str_props(tmp_size);
 
-    delete[] str;
+    delete[] tmp_str;
     return *this;
   }
 
@@ -164,7 +164,7 @@ public:
     if (this == &other)
       return *this;
 
-    set_all_params(other.size());
+    set_str_props(other.size());
     realloc(size());
     strcpy_s(string_, size(), other.string_);
 
@@ -174,7 +174,7 @@ public:
     if (this->c_str() == str)
       return *this;
 
-    set_all_params(strlen(str) + 1);
+    set_str_props(strlen(str) + 1);
     realloc(size());
     strcpy_s(string_, capacity_, str);
 
@@ -185,8 +185,8 @@ public:
     if (this == &other)
       return *this;
 
-    set_all_params(other.size());
-    movestr(other.string_);
+    set_str_props(other.size());
+    strmove(other.string_);
 
     return *this;
   }
@@ -197,27 +197,27 @@ public:
   bool operator==(const char *other) const { return !strcmp(string_, other); }
 
   String operator+(const String &other) const {
-    const auto newSize = size() + other.length();
-    auto *temp_str = new char[newSize];
-    temp_str[0] = 0;
+    const auto tmp_size = size() + other.length();
+    auto *tmp_str = new char[tmp_size];
+    tmp_str[0] = 0;
 
-    strcpy_s(temp_str, newSize, string_);
-    strcat_s(temp_str, newSize, other.string_);
+    strcpy_s(tmp_str, tmp_size, string_);
+    strcat_s(tmp_str, tmp_size, other.string_);
 
-    String ret(temp_str);
-    delete[] temp_str;
+    String ret(tmp_str);
+    delete[] tmp_str;
     return ret;
   }
   String operator+(const char *other) const {
-    const auto newSize = size() + strlen(other);
-    auto *temp_str = new char[newSize];
-    temp_str[0] = 0;
+    const auto tmp_size = size() + strlen(other);
+    auto *tmp_str = new char[tmp_size];
+    tmp_str[0] = 0;
 
-    strcpy_s(temp_str, newSize, string_);
-    strcat_s(temp_str, newSize, other);
+    strcpy_s(tmp_str, tmp_size, string_);
+    strcat_s(tmp_str, tmp_size, other);
 
-    String ret(temp_str);
-    delete[] temp_str;
+    String ret(tmp_str);
+    delete[] tmp_str;
     return ret;
   }
 
@@ -232,51 +232,51 @@ public:
     if (length == this->length())
       return;
 
-    const auto newSize = length + 1;
-    const auto newLength = length;
+    const auto tmp_size = length + 1;
+    const auto tmp_length = length;
     const auto c = ' ';
 
-    auto *newString = new char[newSize];
+    auto *tmp_str = new char[tmp_size];
 
-    if (newLength < this->length()) {
-      for (size_t i = 0; i < newSize; ++i)
-        newString[i] = string_[i];
+    if (tmp_length < this->length()) {
+      for (size_t i = 0; i < tmp_size; ++i)
+        tmp_str[i] = string_[i];
     } else {
       for (size_t i = 0; i < this->length(); ++i)
-        newString[i] = string_[i];
+        tmp_str[i] = string_[i];
 
-      for (auto i = this->length(); i < newLength; ++i)
-        newString[i] = c;
+      for (auto i = this->length(); i < tmp_length; ++i)
+        tmp_str[i] = c;
     }
 
-    set_all_params(newSize);
-    newString[newSize - 1] = '\0';
-    movestr(newString);
+    set_str_props(tmp_size);
+    tmp_str[tmp_size - 1] = '\0';
+    strmove(tmp_str);
   }
   void resize(const size_t length, const char c) {
     if (length == this->length())
       return;
 
-    const auto newSize = length + 1;
-    const auto newLength = length;
+    const auto tmp_size = length + 1;
+    const auto tmp_length = length;
 
-    auto *newString = new char[newSize];
+    auto *tmp_str = new char[tmp_size];
 
-    if (newLength < this->length()) {
-      for (size_t i = 0; i < newSize; ++i)
-        newString[i] = string_[i];
+    if (tmp_length < this->length()) {
+      for (size_t i = 0; i < tmp_size; ++i)
+        tmp_str[i] = string_[i];
     } else {
       for (size_t i = 0; i < this->length(); ++i)
-        newString[i] = string_[i];
+        tmp_str[i] = string_[i];
 
-      for (auto i = this->length(); i < newLength; ++i)
-        newString[i] = c;
+      for (auto i = this->length(); i < tmp_length; ++i)
+        tmp_str[i] = c;
     }
 
-    set_all_params(newSize);
-    newString[newSize - 1] = '\0';
+    set_str_props(tmp_size);
+    tmp_str[tmp_size - 1] = '\0';
 
-    movestr(newString);
+    strmove(tmp_str);
   }
 
   void reserve(const size_t capacity = 0) {
@@ -297,7 +297,7 @@ private:
   size_t length_{0};
   size_t capacity_{0};
 
-  void movestr(char *string) {
+  void strmove(char *string) {
     delete[] string_;
     string_ = string;
   }
@@ -306,11 +306,11 @@ private:
       string_ = new char[size];
       string_[0] = 0;
     } else if (capacity_ < size_) {
-      auto *temp = new char[size];
-      temp[0] = 0;
-      strcpy_s(temp, size, string_);
+      auto *tmp_str = new char[size];
+      tmp_str[0] = 0;
+      strcpy_s(tmp_str, size, string_);
       delete[] string_;
-      string_ = temp;
+      string_ = tmp_str;
     }
   }
   void realloc(const size_t size) {
@@ -323,7 +323,7 @@ private:
       string_ = mem;
     }
   }
-  void set_all_params(const size_t size) {
+  void set_str_props(const size_t size) {
     size_ = size;
     length_ = size - 1;
     if (capacity_ < size_) {
