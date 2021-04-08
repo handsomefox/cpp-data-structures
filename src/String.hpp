@@ -12,18 +12,18 @@ public:
   String(const char *str) {
     set_all_params(strlen(str) + 1);
     alloc(size());
-    cpy_str(str, size());
+    strcpy_s(string_, size(),str );
   }
 
   String(const String &other) {
     set_all_params(other.size());
     alloc(size());
-    cpy_str(other.string_, size());
+    strcpy_s(string_, size(), other.string_);
   }
 
   String(String &&other) noexcept {
     set_all_params(other.size());
-    assign_str(other.string_);
+    movestr(other.string_);
   }
 
   ~String() { delete[] string_; }
@@ -38,7 +38,7 @@ public:
     const auto newSize = str.size() + size();
     realloc(newSize);
 
-    add_strs(string_, newSize, str.string_);
+    strcat_s(string_, newSize, str.string_);
     set_all_params(newSize);
 
     return *this;
@@ -47,7 +47,7 @@ public:
     const auto newSize = strlen(str) + size();
     realloc(newSize);
 
-    add_strs(string_, newSize, str);
+    strcat_s(string_, newSize, str);
     set_all_params(newSize);
 
     return *this;
@@ -66,7 +66,7 @@ public:
 
     temp[sublen] = 0;
 
-    add_strs(string_, newSize, temp);
+    strcat_s(string_, newSize, temp);
     set_all_params(newSize);
 
     delete[] temp;
@@ -84,7 +84,7 @@ public:
 
     temp[n] = 0;
 
-    add_strs(string_, newSize, temp);
+    strcat_s(string_, newSize, temp);
     set_all_params(newSize);
 
     delete[] temp;
@@ -101,7 +101,7 @@ public:
     const auto newSize = size_ + n;
     realloc(newSize);
 
-    add_strs(string_, newSize, str);
+    strcat_s(string_, newSize, str);
     set_all_params(newSize);
 
     delete[] str;
@@ -166,7 +166,7 @@ public:
 
     set_all_params(other.size());
     realloc(size());
-    cpy_str(string_, size(), other.string_);
+    strcpy_s(string_, size(), other.string_);
 
     return *this;
   }
@@ -176,7 +176,7 @@ public:
 
     set_all_params(strlen(str) + 1);
     realloc(size());
-    cpy_str(string_, capacity_, str);
+    strcpy_s(string_, capacity_, str);
 
     return *this;
   }
@@ -186,7 +186,7 @@ public:
       return *this;
 
     set_all_params(other.size());
-    assign_str(other.string_);
+    movestr(other.string_);
 
     return *this;
   }
@@ -201,8 +201,8 @@ public:
     auto *temp_str = new char[newSize];
     temp_str[0] = 0;
 
-    cpy_str(temp_str, newSize, string_);
-    add_strs(temp_str, newSize, other.string_);
+    strcpy_s(temp_str, newSize, string_);
+    strcat_s(temp_str, newSize, other.string_);
 
     String ret(temp_str);
     delete[] temp_str;
@@ -213,8 +213,8 @@ public:
     auto *temp_str = new char[newSize];
     temp_str[0] = 0;
 
-    cpy_str(temp_str, newSize, string_);
-    add_strs(temp_str, newSize, other);
+    strcpy_s(temp_str, newSize, string_);
+    strcat_s(temp_str, newSize, other);
 
     String ret(temp_str);
     delete[] temp_str;
@@ -251,7 +251,7 @@ public:
 
     set_all_params(newSize);
     newString[newSize - 1] = '\0';
-    assign_str(newString);
+    movestr(newString);
   }
   void resize(const size_t length, const char c) {
     if (length == this->length())
@@ -276,7 +276,7 @@ public:
     set_all_params(newSize);
     newString[newSize - 1] = '\0';
 
-    assign_str(newString);
+    movestr(newString);
   }
 
   void reserve(const size_t capacity = 0) {
@@ -297,7 +297,7 @@ private:
   size_t length_{0};
   size_t capacity_{0};
 
-  void assign_str(char *string) {
+  void movestr(char *string) {
     delete[] string_;
     string_ = string;
   }
@@ -322,17 +322,6 @@ private:
       delete[] string_;
       string_ = mem;
     }
-  }
-  char *get_str() const { return string_; }
-  char *get_str() { return string_; }
-  void cpy_str(const char *other, const size_t buffer_size) const {
-    strcpy_s(string_, buffer_size, other);
-  }
-  void cpy_str(char *dest, const size_t buffer_size, const char *other) const {
-    strcpy_s(dest, buffer_size, other);
-  }
-  void add_strs(char *dest, const size_t buffer_size, const char *other) const {
-    strcat_s(dest, buffer_size, other);
   }
   void set_all_params(const size_t size) {
     size_ = size;
