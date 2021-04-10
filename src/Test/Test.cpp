@@ -10,8 +10,6 @@ void mango::RunArrayTest() {
   std::cout << "Array test:\n";
   Array<int, 2> array{};
   std::cout << "array.empty() " << array.empty() << "\n";
-  array.set_null();
-  std::cout << "All array elements are set to 0\n";
   for (size_t i = 0; i < array.size(); ++i)
     std::cout << "Array element " << i << " = " << array[i] << "\n";
   array[0] = 2;
@@ -40,9 +38,6 @@ void mango::RunStringTest() {
 
   std::cout << "Concatenated string: " << str2 + str << "\n";
   std::cout << "Concatenated string: " << str2 + " " + str << "\n";
-  std::cout << "Concatenated string: " << str2 + str << "\n";
-  std::cout << "Concatenated string: " << str2 + " " + str << "\n";
-  std::cout << "Concatenated string: " << str2 + str << "\n";
 
   std::cout << "c_str() from str: " << str.c_str() << "\n";
 
@@ -98,12 +93,33 @@ void mango::RunStringTest() {
   const String str7 = "Writing ";
   const String str8 = "print 10 and then 5 more";
 
-  str6.append(str7);               // "Writing "
-  str6.append(str8, 6, 3);         // "10 "
-  str6.append("dots are cool", 5); // "dots "
-  str6.append("here: ");           // "here: "
-  str6.append(10u, '.');           // ".........."
+  str6.append(str7);
+  str6.append(str8, 6, 3);
+  str6.append("dots are cool", 5);
+  str6.append("here: ");
+  str6.append(10u, '.');
   std::cout << str6 << '\n';
+
+  String str9("There are two needles in this haystack with needles.");
+  const String str10("needle");
+
+  auto found = str9.find(str10);
+  if (found != String::npos)
+    std::cout << "first 'needle' found at: " << found << '\n';
+
+  found = str9.find("needles are small", found + 1, 6);
+  if (found != String::npos)
+    std::cout << "second 'needle' found at: " << found << '\n';
+
+  found = str9.find("haystack");
+  if (found != String::npos)
+    std::cout << "'haystack' also found at: " << found << '\n';
+
+  found = str9.find('.');
+  if (found != String::npos)
+    std::cout << "Period found at: " << found << '\n';
+  str9.replace(str9.find(str10), str10.length(), "stickys");
+  std::cout << str9 << '\n';
 }
 
 void mango::RunVectorTest() {
@@ -114,7 +130,7 @@ void mango::RunVectorTest() {
   vec.reserve(100);
   std::cout << "Adding data to Vector\n";
   vec.push_back(1);
-  vec.emplace_back(2);
+  vec.push_back(2);
   vec.emplace_back(3);
   vec.emplace_back(4);
   vec.print();
