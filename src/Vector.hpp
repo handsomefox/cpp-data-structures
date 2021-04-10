@@ -42,13 +42,13 @@ public:
     data_ = newData;
   }
 
-  bool empty() const { return size_ == 0 ? true : false; }
+  [[nodiscard]] bool empty() const { return size_ == 0 ? true : false; }
 
   size_t size() { return size_; }
-  size_t size() const { return size_; }
+  [[nodiscard]] size_t size() const { return size_; }
 
   size_t capacity() { return capacity_; }
-  size_t capacity() const { return capacity_; }
+  [[nodiscard]] size_t capacity() const { return capacity_; }
 
   void clear() {
     for (size_t i = 0; i < size_; ++i)
