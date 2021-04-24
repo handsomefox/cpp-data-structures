@@ -13,7 +13,9 @@ namespace mango
 		using pointer = Vector*;
 		using reference = Vector&;
 
-		VecIter(pointer ptr) : m_ptr(ptr) {}
+		VecIter(pointer ptr) : m_ptr(ptr)
+		{
+		}
 
 		reference operator*() const { return *m_ptr; }
 		pointer operator->() { return m_ptr; }
@@ -23,10 +25,11 @@ namespace mango
 			++m_ptr;
 			return *this;
 		}
+
 		VecIter operator++(Vector)
 		{
 			VecIter tmp = *this;
-			++(*this);
+			++*this;
 			return tmp;
 		}
 
@@ -50,7 +53,7 @@ namespace mango
 			size_ = vec.size_;
 			capacity_ = vec.capacity_;
 
-			data_ = new T[sizeof & vec.data_];
+			data_ = new T[sizeof &vec.data_];
 			memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
 		}
 
@@ -75,7 +78,9 @@ namespace mango
 			T* newData = new T[capacity_];
 
 			for (size_t i = 0; i < size_; ++i)
+			{
 				newData[i] = data_[i];
+			}
 
 			delete[] data_;
 			data_ = newData;
@@ -92,23 +97,29 @@ namespace mango
 		void clear()
 		{
 			for (size_t i = 0; i < size_; ++i)
+			{
 				data_[i].~T();
+			}
 			size_ = 0;
 		}
 
 		void push_back(T data)
 		{
 			if (size_ >= capacity_)
+			{
 				reserve(capacity_ + capacity_ / 2);
+			}
 
 			data_[size_++] = data;
 		}
 
 		template <typename... Args>
-		T& emplace_back(Args &&...args)
+		T& emplace_back(Args&&...args)
 		{
 			if (size_ >= capacity_)
+			{
 				reserve(capacity_ + capacity_ / 2);
+			}
 
 			data_[size_] = T(std::forward<Args>(args)...);
 			return data_[size_++];
@@ -130,9 +141,13 @@ namespace mango
 			for (size_t i = 0; i < size; ++i)
 			{
 				if (i < size_)
+				{
 					newData[i] = data_[i];
+				}
 				else if (std::is_integral_v<T>)
+				{
 					newData[i] = static_cast<T>(0);
+				}
 			}
 			delete[] data_;
 
@@ -145,7 +160,9 @@ namespace mango
 		{
 			std::cout << "Printing Vector: \n";
 			for (size_t i = 0; i < size_; ++i)
+			{
 				std::cout << data_[i] << "\n";
+			}
 		}
 
 		const T& operator[](size_t index) const { return data_[index]; }
@@ -155,12 +172,14 @@ namespace mango
 		constexpr Vector& operator=(const Vector& vec)
 		{
 			if (this == &vec)
+			{
 				return *this;
+			}
 
 			this->size_ = vec.size_;
 			this->capacity_ = vec.capacity_;
 
-			data_ = new T[sizeof & vec.data_];
+			data_ = new T[sizeof &vec.data_];
 			memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
 
 			return *this;
@@ -169,7 +188,9 @@ namespace mango
 		constexpr Vector& operator=(Vector&& vec) noexcept
 		{
 			if (this == &vec)
+			{
 				return *this;
+			}
 
 			size_ = vec.size_;
 			capacity_ = vec.capacity_;
@@ -178,10 +199,12 @@ namespace mango
 
 			return *this;
 		}
+
 		VecIter<T> begin()
 		{
 			return VecIter<T>(&data_[0]);
 		}
+
 		VecIter<T> end()
 		{
 			return VecIter<T>(&data_[size_]);

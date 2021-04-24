@@ -13,7 +13,9 @@ namespace mango
 		using pointer = Array*;
 		using reference = Array&;
 
-		ArrIter(pointer ptr) : m_ptr(ptr) {}
+		ArrIter(pointer ptr) : m_ptr(ptr)
+		{
+		}
 
 		reference operator*() const { return *m_ptr; }
 		pointer operator->() { return m_ptr; }
@@ -23,10 +25,11 @@ namespace mango
 			++m_ptr;
 			return *this;
 		}
+
 		ArrIter operator++(Array)
 		{
 			ArrIter tmp = *this;
-			++(*this);
+			++*this;
 			return tmp;
 		}
 
@@ -36,6 +39,7 @@ namespace mango
 	private:
 		pointer m_ptr = nullptr;
 	};
+
 	template <typename T, size_t N>
 	class Array
 	{
@@ -46,15 +50,19 @@ namespace mango
 		constexpr size_t size() noexcept { return N; }
 		constexpr T* data() noexcept { return data_; }
 		[[nodiscard]] constexpr const T* data() const noexcept { return data_; }
+
 		constexpr const T& operator[](const size_t& index) const noexcept
 		{
 			return data_[index];
 		}
+
 		constexpr T& operator[](const size_t& index) noexcept { return data_[index]; }
+
 		ArrIter<T> begin()
 		{
 			return ArrIter<T>(&data_[0]);
 		}
+
 		ArrIter<T> end()
 		{
 			return ArrIter<T>(&data_[N]);

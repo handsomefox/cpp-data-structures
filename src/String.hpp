@@ -36,7 +36,9 @@ namespace mango
 		char& at(const size_t pos)
 		{
 			if (length_ < pos)
+			{
 				__debugbreak();
+			}
 			return string_[pos];
 		}
 
@@ -50,6 +52,7 @@ namespace mango
 
 			return *this;
 		}
+
 		String& append(const char* str)
 		{
 			const auto tmp_size = 1 + strlen(str) + size_;
@@ -62,7 +65,7 @@ namespace mango
 		}
 
 		String& append(const String& str, const size_t subpos,
-			const size_t sublen = npos)
+		               const size_t sublen = npos)
 		{
 			const auto tmp_size = str.size_ + sublen;
 			realloc(tmp_size);
@@ -70,7 +73,9 @@ namespace mango
 			auto* tmp_str = create_null_str(sublen + 1);
 
 			for (auto i = subpos; i < subpos + sublen; ++i)
+			{
 				tmp_str[i - subpos] = str[i];
+			}
 
 			strcat_s(string_, tmp_size, tmp_str);
 			set_str_props(tmp_size);
@@ -78,6 +83,7 @@ namespace mango
 			delete[] tmp_str;
 			return *this;
 		}
+
 		String& append(const char* str, const size_t n)
 		{
 			const auto tmp_size = size_ + n;
@@ -86,7 +92,9 @@ namespace mango
 			auto* tmp_str = create_null_str(n + 1);
 
 			for (size_t i = 0; i < n; ++i)
+			{
 				tmp_str[i] = str[i];
+			}
 
 			strcat_s(string_, tmp_size, tmp_str);
 			set_str_props(tmp_size);
@@ -94,12 +102,15 @@ namespace mango
 			delete[] tmp_str;
 			return *this;
 		}
+
 		String& append(const size_t n, const char c)
 		{
 			auto* tmp_str = create_null_str(n + 1);
 
 			for (size_t i = 0; i < n; ++i)
+			{
 				tmp_str[i] = c;
+			}
 
 			const auto tmp_size = size_ + n;
 			realloc(tmp_size);
@@ -114,35 +125,45 @@ namespace mango
 		[[nodiscard]] const char& at(const size_t pos) const
 		{
 			if (length_ < pos)
+			{
 				__debugbreak();
+			}
 			return string_[pos];
 		}
 
 		char& back()
 		{
 			if (!empty())
+			{
 				return string_[length_ - 1];
-			else
-				return string_[npos];
+			}
+			return string_[npos];
 		}
 
 		[[nodiscard]] char& back() const
 		{
 			if (!empty())
+			{
 				return string_[length_ - 1];
+			}
 			return string_[npos];
 		}
 
 		[[nodiscard]] char& front() const
 		{
 			if (!empty())
+			{
 				return string_[0];
+			}
 			return string_[npos];
 		}
+
 		char& front()
 		{
 			if (!empty())
+			{
 				return string_[0];
+			}
 			return string_[npos];
 		}
 
@@ -153,6 +174,7 @@ namespace mango
 			memset(string_, 0, size_);
 			length_ = 0;
 		}
+
 		[[nodiscard]] const char* c_str() const noexcept { return string_; }
 
 		[[nodiscard]] size_t capacity() const { return capacity_; }
@@ -164,7 +186,9 @@ namespace mango
 		void shrink_to_fit()
 		{
 			if (capacity_ == size_)
+			{
 				return;
+			}
 			alloc(size_);
 			capacity_ = size_;
 		}
@@ -175,7 +199,9 @@ namespace mango
 		String& operator=(const String& other)
 		{
 			if (this == &other)
+			{
 				return *this;
+			}
 
 			set_str_props(other.size_);
 			realloc(size_);
@@ -183,10 +209,13 @@ namespace mango
 
 			return *this;
 		}
+
 		String& operator=(const char* str)
 		{
 			if (string_ == str)
+			{
 				return *this;
+			}
 
 			set_str_props(strlen(str) + 1);
 			realloc(size_);
@@ -198,19 +227,24 @@ namespace mango
 		constexpr String& operator=(String&& other) noexcept
 		{
 			if (this == &other)
+			{
 				return *this;
+			}
 
 			set_str_props(other.size_);
 			strmove(other.string_);
 
 			return *this;
 		}
+
 		char& operator[](const size_t index) const { return string_[index]; }
 		char& operator[](const size_t index) { return string_[index]; }
+
 		bool operator==(const String& rhs) const
 		{
 			return !strcmp(string_, rhs.string_);
 		}
+
 		bool operator==(const char* rhs) const { return !strcmp(string_, rhs); }
 
 		String operator+(const String& rhs) const
@@ -225,6 +259,7 @@ namespace mango
 			delete[] tmp_str;
 			return *ret;
 		}
+
 		String operator+(const char* rhs) const
 		{
 			const auto tmp_size = 1 + strlen(rhs) + size_;
@@ -246,38 +281,50 @@ namespace mango
 
 		static const size_t npos = -1;
 		static size_t max_size() { return SIZE_MAX; }
+
 		void resize(const size_t length)
 		{
 			if (length == length_)
+			{
 				return;
+			}
 
 			const auto tmp_size = length + 1;
 			const auto tmp_length = length;
 
 			auto* tmp_str = create_null_str(tmp_size);
 
-			if (tmp_length < length_)
-			{
-				for (size_t i = 0; i < tmp_size; ++i)
-					tmp_str[i] = string_[i];
-			}
-			else
+			if (tmp_length >= length_)
 			{
 				const auto c = ' ';
 				for (size_t i = 0; i < length_; ++i)
+				{
 					tmp_str[i] = string_[i];
+				}
 
 				for (auto i = length_; i < tmp_length; ++i)
+				{
 					tmp_str[i] = c;
+				}
+			}
+			else
+			{
+				for (size_t i = 0; i < tmp_size; ++i)
+				{
+					tmp_str[i] = string_[i];
+				}
 			}
 
 			set_str_props(tmp_size);
 			strmove(tmp_str);
 		}
+
 		void resize(const size_t length, const char c)
 		{
 			if (length == length_)
+			{
 				return;
+			}
 
 			const auto tmp_size = length + 1;
 			const auto tmp_length = length;
@@ -287,15 +334,21 @@ namespace mango
 			if (tmp_length < length_)
 			{
 				for (size_t i = 0; i < tmp_size; ++i)
+				{
 					tmp_str[i] = string_[i];
+				}
 			}
 			else
 			{
 				for (size_t i = 0; i < length_; ++i)
+				{
 					tmp_str[i] = string_[i];
+				}
 
 				for (auto i = length_; i < tmp_length; ++i)
+				{
 					tmp_str[i] = c;
+				}
 			}
 
 			set_str_props(tmp_size);
@@ -307,6 +360,7 @@ namespace mango
 			realloc(capacity);
 			capacity_ = capacity;
 		}
+
 		void push_back(const char c) { append(1, c); }
 
 		[[nodiscard]] size_t find(const String& str, size_t pos = 0) const noexcept
@@ -315,26 +369,34 @@ namespace mango
 
 			const size_t index = result - string_;
 			if (result == nullptr)
+			{
 				return npos;
+			}
 
 			return index;
 		}
+
 		size_t find(const char* s, size_t pos = 0) const
 		{
 			auto* const result = strstr(string_, s);
 
 			const size_t index = result - string_;
 			if (result == nullptr)
+			{
 				return npos;
+			}
 
 			return index;
 		}
+
 		size_t find(const char* s, const size_t pos, const size_t n) const
 		{
 			auto* tmp_str = create_null_str(n + 1);
 
 			for (size_t i = 0; i < n; ++i)
+			{
 				tmp_str[i] = s[i];
+			}
 
 			auto* const result = strstr(string_, tmp_str);
 
@@ -342,26 +404,35 @@ namespace mango
 
 			const size_t index = result - string_;
 			if (result == nullptr)
+			{
 				return npos;
+			}
 
 			return index;
 		}
+
 		[[nodiscard]] size_t find(const char c, const size_t pos = 0) const noexcept
 		{
 			for (auto i = pos; i < length_; ++i)
+			{
 				if (string_[i] == c)
+				{
 					return i;
+				}
+			}
 
 			return npos;
 		}
+
 		String& replace(const size_t pos, const size_t len, const char* substr)
 		{
 			realloc(size_ + strlen(substr));
 			memcpy(string_ + pos, substr, strlen(substr));
 			return *this;
 		}
+
 		String& replace(size_t pos, size_t len, const String& str, size_t subpos,
-			size_t sublen = npos)
+		                size_t sublen = npos)
 		{
 			realloc(size_ + str.length_);
 			memcpy(string_ + pos, str.string_, str.length_);
@@ -370,43 +441,50 @@ namespace mango
 
 	private:
 		char* string_ = nullptr;
-		size_t size_{ 0 };
-		size_t length_{ 0 };
-		size_t capacity_{ 0 };
+		size_t size_{0};
+		size_t length_{0};
+		size_t capacity_{0};
 
 		void strmove(char* string)
 		{
 			delete[] string_;
 			string_ = string;
 		}
+
 		static char* create_null_str(const size_t size)
 		{
 			auto* tmp_str = new char[size];
 			memset(tmp_str, '\0', size * sizeof(char));
 			return tmp_str;
 		}
+
 		void alloc(const size_t size)
 		{
 			auto* tmp_str = create_null_str(size);
 
 			if (string_ != nullptr)
+			{
 				strcpy_s(tmp_str, size, string_);
+			}
 
 			strmove(tmp_str);
 		}
+
 		void realloc(const size_t size)
 		{
 			if (capacity_ < size)
 			{
-
 				auto* tmp_str = create_null_str(size);
 
 				if (string_ != nullptr)
+				{
 					strcpy_s(tmp_str, size, string_);
+				}
 
 				strmove(tmp_str);
 			}
 		}
+
 		void set_str_props(const size_t size)
 		{
 			size_ = size;

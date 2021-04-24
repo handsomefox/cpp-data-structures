@@ -12,21 +12,25 @@ void mango::RunArrayTest()
 	Array<int, 2> array{};
 	std::cout << "array.empty() " << array.empty() << "\n";
 	for (size_t i = 0; i < array.size(); ++i)
+	{
 		std::cout << "Array element " << i << " = " << array[i] << "\n";
+	}
 	array[0] = 2;
 	array[1] = 2;
 	std::cout << "All array elements are set to 2\n";
 	for (size_t i = 0; i < array.size(); ++i)
+	{
 		std::cout << "Array element " << i << " = " << array[i] << "\n";
+	}
 
 	std::cout << "Iterator test\n";
-	Array<int, 100> arr_iterator{};
+	Array<int, 20> arr_iterator{};
 	for (int i = 0; i < 20; ++i)
 	{
 		arr_iterator[i] = i + 20;
 	}
 
-	for (auto const& number : arr_iterator)
+	for (const auto& number : arr_iterator)
 	{
 		std::cout << "Number = " << number << "\n";
 	}
@@ -74,7 +78,9 @@ void mango::RunStringTest()
 	str3.resize(14);
 
 	for (size_t i = 0; i < str3.length(); ++i)
+	{
 		std::cout << str3.at(i);
+	}
 
 	std::cout << '\n';
 	std::cout << "Length: " << str3.length() << '\n';
@@ -119,19 +125,27 @@ void mango::RunStringTest()
 
 	auto found = str9.find(str10);
 	if (found != String::npos)
+	{
 		std::cout << "first 'needle' found at: " << found << '\n';
+	}
 
 	found = str9.find("needles are small", found + 1, 6);
 	if (found != String::npos)
+	{
 		std::cout << "second 'needle' found at: " << found << '\n';
+	}
 
 	found = str9.find("haystack");
 	if (found != String::npos)
+	{
 		std::cout << "'haystack' also found at: " << found << '\n';
+	}
 
 	found = str9.find('.');
 	if (found != String::npos)
+	{
 		std::cout << "Period found at: " << found << '\n';
+	}
 	str9.replace(str9.find(str10), str10.length(), "stickys");
 	std::cout << str9 << '\n';
 }
@@ -226,7 +240,7 @@ void mango::RunVectorTest()
 		vec_iterator.push_back(i);
 	}
 
-	for (auto const& number : vec_iterator)
+	for (const auto& number : vec_iterator)
 	{
 		std::cout << "Number = " << number << "\n";
 	}
