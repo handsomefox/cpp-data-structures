@@ -24,11 +24,8 @@ void mango::RunArrayTest()
 	}
 
 	std::cout << "Iterator test\n";
-	Array<int, 20> arr_iterator{};
-	for (int i = 0; i < 20; ++i)
-	{
-		arr_iterator[i] = i + 20;
-	}
+	Array<int, 10> arr_iterator{};
+	std::fill(arr_iterator.begin(), arr_iterator.end(), -2);
 
 	for (const auto& number : arr_iterator)
 	{
@@ -148,6 +145,15 @@ void mango::RunStringTest()
 	}
 	str9.replace(str9.find(str10), str10.length(), "stickys");
 	std::cout << str9 << '\n';
+
+	String str_iter;
+	str_iter.resize(10);
+	std::fill(str_iter.begin(), str_iter.end(), "E");
+	for(const auto &chr : str_iter)
+	{
+		std::cout << chr << "\n";
+	}
+	
 }
 
 void mango::RunVectorTest()
@@ -235,10 +241,8 @@ void mango::RunVectorTest()
 
 	std::cout << "Iterator test\n";
 	Vector<int> vec_iterator;
-	for (int i = 0; i < 20; ++i)
-	{
-		vec_iterator.push_back(i);
-	}
+	vec_iterator.resize(10);
+	std::fill(vec_iterator.begin(), vec_iterator.end(), -1);
 
 	for (const auto& number : vec_iterator)
 	{
