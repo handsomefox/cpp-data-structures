@@ -2,44 +2,9 @@
 #define VECTOR_HPP
 #include <iostream>
 
+#include "Iterator.hpp"
 namespace mango
 {
-	template <typename Vector>
-	struct VecIter
-	{
-		using iterator_category = std::forward_iterator_tag;
-		using value_type = Vector;
-		using difference_type = std::ptrdiff_t;
-		using pointer = Vector*;
-		using reference = Vector&;
-
-		VecIter(pointer ptr) : m_ptr(ptr)
-		{
-		}
-
-		reference operator*() const { return *m_ptr; }
-		pointer operator->() { return m_ptr; }
-
-		VecIter& operator++()
-		{
-			++m_ptr;
-			return *this;
-		}
-
-		VecIter operator++(Vector)
-		{
-			VecIter tmp = *this;
-			++*this;
-			return tmp;
-		}
-
-		friend bool operator==(const VecIter& a, const VecIter& b) { return a.m_ptr == b.m_ptr; }
-		friend bool operator!=(const VecIter& a, const VecIter& b) { return a.m_ptr != b.m_ptr; }
-
-	private:
-		pointer m_ptr = nullptr;
-	};
-
 	template <typename T>
 	class Vector
 	{
@@ -53,7 +18,7 @@ namespace mango
 			size_ = vec.size_;
 			capacity_ = vec.capacity_;
 
-			data_ = new T[sizeof &vec.data_];
+			data_ = new T[sizeof & vec.data_];
 			memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
 		}
 
@@ -179,7 +144,7 @@ namespace mango
 			this->size_ = vec.size_;
 			this->capacity_ = vec.capacity_;
 
-			data_ = new T[sizeof &vec.data_];
+			data_ = new T[sizeof & vec.data_];
 			memcpy_s(data_, sizeof data_, vec.data_, sizeof vec.data_);
 
 			return *this;
@@ -200,14 +165,14 @@ namespace mango
 			return *this;
 		}
 
-		VecIter<T> begin()
+		Iter<T> begin()
 		{
-			return VecIter<T>(&data_[0]);
+			return Iter<T>(&data_[0]);
 		}
 
-		VecIter<T> end()
+		Iter<T> end()
 		{
-			return VecIter<T>(&data_[size_]);
+			return Iter<T>(&data_[size_]);
 		}
 
 	private:
