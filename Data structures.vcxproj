@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="src\Array.hpp" />
     <ClInclude Include="src\String.hpp" />
+    <ClInclude Include="src\Iterator.hpp" />
     <ClInclude Include="src\Test\Test.hpp" />
     <ClInclude Include="src\Vector.hpp" />
   </ItemGroup>
