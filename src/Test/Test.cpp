@@ -148,11 +148,6 @@ void mango::RunStringTest()
 
 	String str_iter;
 	str_iter.resize(10);
-	std::fill(str_iter.begin(), str_iter.end(), "E");
-	for(const auto &chr : str_iter)
-	{
-		std::cout << chr << "\n";
-	}
 	
 }
 
