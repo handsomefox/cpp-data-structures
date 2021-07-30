@@ -1,12 +1,12 @@
-#include "Test.hpp"
+#pragma once
 
 #include <iostream>
 
-#include "Array.hpp"
-#include "String.hpp"
-#include "Vector.hpp"
+#include "Array.h"
+#include "String.h"
+#include "Vector.h"
 
-void mango::RunArrayTest()
+inline void RunArrayTest()
 {
 	std::cout << "Array test:\n";
 	Array<int, 2> array{};
@@ -33,7 +33,7 @@ void mango::RunArrayTest()
 	}
 }
 
-void mango::RunStringTest()
+inline void RunStringTest()
 {
 	std::cout << "String test:\n";
 
@@ -148,10 +148,10 @@ void mango::RunStringTest()
 
 	String str_iter;
 	str_iter.resize(10);
-	
+
 }
 
-void mango::RunVectorTest()
+inline void RunVectorTest()
 {
 	std::cout << "Vector test:\n";
 	Vector<int> vec;

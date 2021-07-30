@@ -1,14 +1,14 @@
-#include "Test/Test.hpp"
+#include "Test.h"
 #include <iostream>
 
 int main()
 {
-	mango::RunVectorTest();
+	RunVectorTest();
 	std::cin.get();
 	system("CLS");
-	mango::RunArrayTest();
+	RunArrayTest();
 	std::cin.get();
 	system("CLS");
-	mango::RunStringTest();
+	RunStringTest();
 	std::cin.get();
 }
