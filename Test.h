@@ -148,7 +148,6 @@ inline void RunStringTest()
 
 	String str_iter;
 	str_iter.resize(10);
-
 }
 
 inline void RunVectorTest()

@@ -7,14 +7,14 @@ class Vector
 {
 public:
 	Vector();
-	explicit Vector(const size_t capacity);
+	explicit Vector(size_t capacity);
 	Vector(const Vector& vec);
 	Vector(Vector&& vec) noexcept;
 	~Vector();
 	T& front();
 	T& back();
 	T* data();
-	void reserve(const size_t new_capacity);
+	void reserve(size_t new_capacity);
 	bool empty() const;
 	size_t size();
 	size_t size() const;
@@ -23,7 +23,7 @@ public:
 	void clear();
 	void push_back(T data);
 	template <typename... Args>
-	T& emplace_back(Args&&...args);
+	T& emplace_back(Args &&...args);
 	void pop_back();
 	void resize(const size_t size);
 	void print();
@@ -162,8 +162,8 @@ void Vector<T>::push_back(T data)
 }
 
 template <typename T>
-template <typename ... Args>
-T& Vector<T>::emplace_back(Args&&... args)
+template <typename... Args>
+T& Vector<T>::emplace_back(Args &&...args)
 {
 	if (size_ >= capacity_)
 	{

@@ -20,7 +20,6 @@ public:
 		return lhs.m_ptr != rhs.m_ptr;
 	}
 
-
 private:
 	T* m_ptr = nullptr;
 };
@@ -56,4 +55,3 @@ Iterator<T> Iterator<T>::operator++(T)
 	++* this;
 	return tmp;
 }
-
