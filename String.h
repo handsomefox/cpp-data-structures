@@ -1,30 +1,29 @@
 #pragma once
 
-#include <cstring>
 #include <iostream>
 
 class String
 {
 public:
-	String();
+	String() = default;
 	String(const char* other);
 	String(const String& other);
 	String(String&& other) noexcept;
 	~String();
-	char& at(const size_t pos);
+	char& at(size_t pos);
 	String& append(const String& str);
 	String& append(const char* str);
-	String& append(const String& str, const size_t subpos, const size_t sublen = npos);
-	String& append(const char* str, const size_t n);
-	String& append(const size_t n, const char c);
-	const char& at(const size_t pos) const;
+	String& append(const String& str, size_t subpos, size_t sublen = npos);
+	String& append(const char* str, size_t n);
+	String& append(size_t n, char c);
+	const char& at(size_t pos) const;
 	char& back();
 	char& back() const;
 	char& front() const;
 	char& front();
 	bool empty() const;
 	void clear();
-	const char* c_str() const noexcept;
+	const char* c_str() const;
 	size_t capacity() const;
 	size_t capacity();
 	size_t size() const;
@@ -35,8 +34,8 @@ public:
 	String& operator=(const String& other);
 	String& operator=(const char* str);
 	constexpr String& operator=(String&& other) noexcept;
-	char& operator[](const size_t index) const;
-	char& operator[](const size_t index);
+	char& operator[](size_t index) const;
+	char& operator[](size_t index);
 	bool operator==(const String& rhs) const;
 	bool operator==(const char* rhs) const;
 	String operator+(const String& rhs) const;
@@ -44,15 +43,15 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const String& str);
 	static const size_t npos = -1;
 	static size_t max_size();
-	void resize(const size_t length);
-	void resize(const size_t length, const char c);
-	void reserve(const size_t capacity = 0);
-	void push_back(const char c);
-	size_t find(const String& str, size_t pos = 0) const noexcept;
+	void resize(size_t length);
+	void resize(size_t length, char c);
+	void reserve(size_t capacity = 0);
+	void push_back(char c);
+	size_t find(const String& str, size_t pos = 0) const;
 	size_t find(const char* s, size_t pos = 0) const;
-	size_t find(const char* s, const size_t pos, const size_t n) const;
-	size_t find(const char c, const size_t pos = 0) const noexcept;
-	String& replace(const size_t pos, const size_t len, const char* substr);
+	size_t find(const char* s, size_t pos, size_t n) const;
+	size_t find(char c, size_t pos = 0) const;
+	String& replace(size_t pos, size_t len, const char* substr);
 	String& replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen = npos);
 
 private:
@@ -61,36 +60,29 @@ private:
 	size_t length_{ 0 };
 	size_t capacity_{ 0 };
 
-	void strmove(char* string);
-	static char* create_null_str(const size_t size);
-	void alloc(const size_t size);
-	void realloc(const size_t size);
-	void set_str_props(const size_t size);
+	void allocate(size_t size);
+	void set_str_props(size_t size);
 };
-
-inline String::String()
-{
-	reserve(22);
-}
 
 inline String::String(const char* other)
 {
 	set_str_props(strlen(other) + 1);
-	alloc(size_);
-	strcpy_s(string_, size_, other);
+	allocate(this->size());
+	strcpy_s(this->string_, this->size(), other);
 }
 
 inline String::String(const String& other)
 {
-	set_str_props(other.size_);
-	alloc(size_);
-	strcpy_s(string_, size_, other.string_);
+	set_str_props(other.size());
+	allocate(this->size());
+	strcpy_s(this->string_, size(), other.string_);
 }
 
 inline String::String(String&& other) noexcept
 {
-	set_str_props(other.size_);
-	strmove(other.string_);
+	set_str_props(other.size());
+	delete[] string_;
+	string_ = other.string_;
 }
 
 inline String::~String()
@@ -100,7 +92,7 @@ inline String::~String()
 
 inline char& String::at(const size_t pos)
 {
-	if (length_ < pos)
+	if (length() < pos)
 	{
 		__debugbreak();
 	}
@@ -109,86 +101,106 @@ inline char& String::at(const size_t pos)
 
 inline String& String::append(const String& str)
 {
-	const auto tmp_size = str.size_ + size_;
-	realloc(tmp_size);
+	const auto temp_size = str.length() + this->length() + 1;
 
-	strcat_s(string_, tmp_size, str.string_);
-	set_str_props(tmp_size);
+	if (string_ == nullptr)
+	{
+		const auto temp = new char[temp_size];
+		strcpy_s(temp, temp_size, str.string_);
+		string_ = temp;
+	}
+	else
+	{
+		allocate(temp_size);
+		strcat_s(string_, temp_size, str.string_);
+	}
+	set_str_props(temp_size);
 
 	return *this;
 }
 
 inline String& String::append(const char* str)
 {
-	const auto tmp_size = 1 + strlen(str) + size_;
-	realloc(tmp_size);
+	const auto temp_size = strlen(str) + this->length() + 1;
 
-	strcat_s(string_, tmp_size, str);
-	set_str_props(tmp_size);
+	if (string_ == nullptr)
+	{
+		auto temp = new char[temp_size];
+		strcpy_s(temp, temp_size, str);
+		string_ = temp;
+	}
+	else
+	{
+		allocate(temp_size);
+		strcat_s(string_, temp_size, str);
+	}
+	set_str_props(temp_size);
 
 	return *this;
 }
 
 inline String& String::append(const String& str, const size_t subpos, const size_t sublen)
 {
-	const auto tmp_size = str.size_ + sublen;
-	realloc(tmp_size);
+	const auto temp_size = str.length() + sublen + 1;
+	allocate(temp_size);
 
-	auto* tmp_str = create_null_str(sublen + 1);
+	const auto temp = new char[sublen + 1];
 
-	for (auto i = subpos; i < subpos + sublen; ++i)
+	for (size_t i = 0; i < sublen; ++i)
 	{
-		tmp_str[i - subpos] = str[i];
+		temp[i] = str[subpos + i];
 	}
 
-	strcat_s(string_, tmp_size, tmp_str);
-	set_str_props(tmp_size);
+	temp[sublen] = '\0';
 
-	delete[] tmp_str;
+	strcat_s(string_, temp_size, temp);
+	set_str_props(temp_size);
+
+	delete[] temp;
 	return *this;
 }
 
 inline String& String::append(const char* str, const size_t n)
 {
-	const auto tmp_size = size_ + n;
-	realloc(tmp_size);
+	const auto tmp_size = length() + n + 1;
+	allocate(tmp_size);
 
-	auto* tmp_str = create_null_str(n + 1);
+	const auto temp = new char[n + 1];
 
 	for (size_t i = 0; i < n; ++i)
 	{
-		tmp_str[i] = str[i];
+		temp[i] = str[i];
 	}
-
-	strcat_s(string_, tmp_size, tmp_str);
+	temp[n] = '\0';
+	strcat_s(string_, tmp_size, temp);
 	set_str_props(tmp_size);
 
-	delete[] tmp_str;
+	delete[] temp;
 	return *this;
 }
 
 inline String& String::append(const size_t n, const char c)
 {
-	auto* tmp_str = create_null_str(n + 1);
+	auto* temp = new char[n + 1];
 
 	for (size_t i = 0; i < n; ++i)
 	{
-		tmp_str[i] = c;
+		temp[i] = c;
 	}
+	temp[n] = '\0';
+	const auto tmp_size = length() + n + 1;
+	allocate(tmp_size);
 
-	const auto tmp_size = size_ + n;
-	realloc(tmp_size);
-
-	strcat_s(string_, tmp_size, tmp_str);
+	strcat_s(string_, tmp_size, temp);
 	set_str_props(tmp_size);
 
-	delete[] tmp_str;
+	delete[] temp;
 	return *this;
 }
 
 inline const char& String::at(const size_t pos) const
 {
-	if (length_ < pos)
+	if (length() < pos)
 	{
 		__debugbreak();
 	}
@@ -199,7 +211,7 @@ inline char& String::back()
 {
 	if (!empty())
 	{
-		return string_[length_ - 1];
+		return string_[length() - 1];
 	}
 	return string_[npos];
 }
@@ -208,7 +220,7 @@ inline char& String::back() const
 {
 	if (!empty())
 	{
-		return string_[length_ - 1];
+		return string_[length() - 1];
 	}
 	return string_[npos];
 }
@@ -233,16 +245,16 @@ inline char& String::front()
 
 inline bool String::empty() const
 {
-	return length_ == 0;
+	return length() == 0;
 }
 
 inline void String::clear()
 {
-	memset(string_, 0, size_);
+	memset(string_, 0, size());
 	length_ = 0;
 }
 
-inline const char* String::c_str() const noexcept
+inline const char* String::c_str() const
 {
 	return string_;
 }
@@ -269,12 +281,17 @@ inline size_t String::size()
 
 inline void String::shrink_to_fit()
 {
-	if (capacity_ == size_)
+	if (capacity() == size())
 	{
 		return;
 	}
-	alloc(size_);
-	capacity_ = size_;
+
+	const auto temp = new char[size()];
+	strcpy_s(temp, size(), string_);
+
+	delete[] string_;
+	string_ = temp;
+	set_str_props(size());
 }
 
 inline size_t String::length() const
@@ -294,9 +311,9 @@ inline String& String::operator=(const String& other)
 		return *this;
 	}
 
-	set_str_props(other.size_);
-	realloc(size_);
-	strcpy_s(string_, size_, other.string_);
+	set_str_props(other.size());
+	allocate(size());
+	strcpy_s(string_, size(), other.string_);
 
 	return *this;
 }
@@ -309,21 +326,22 @@ inline String& String::operator=(const char* str)
 	}
 
 	set_str_props(strlen(str) + 1);
-	realloc(size_);
-	strcpy_s(string_, capacity_, str);
+	allocate(size());
+	strcpy_s(string_, capacity(), str);
 
 	return *this;
 }
 
-constexpr String& String::operator=(String&& other) noexcept
+constexpr auto String::operator=(String&& other) noexcept -> String&
 {
 	if (this == &other)
 	{
 		return *this;
 	}
 
-	set_str_props(other.size_);
-	strmove(other.string_);
+	set_str_props(other.size());
+	delete[] string_;
+	string_ = other.string_;
 
 	return *this;
 }
@@ -350,27 +368,27 @@ inline bool String::operator==(const char* rhs) const
 
 inline String String::operator+(const String& rhs) const
 {
-	const auto tmp_size = rhs.size_ + size_;
-	auto* tmp_str = create_null_str(tmp_size);
+	const auto temp_size = length() + rhs.length() + 1;
+	auto temp = new char[temp_size];
+	strcpy_s(temp, temp_size, string_);
+	strcpy_s(temp, temp_size, rhs.string_);
 
-	strcpy_s(tmp_str, tmp_size, string_);
-	strcat_s(tmp_str, tmp_size, rhs.string_);
+	const auto ret = std::make_unique<String>(temp);
 
-	const auto ret = std::make_unique<String>(tmp_str);
-	delete[] tmp_str;
+	delete[] temp;
 	return *ret;
 }
 
 inline String String::operator+(const char* rhs) const
 {
-	const auto tmp_size = 1 + strlen(rhs) + size_;
-	auto* tmp_str = create_null_str(tmp_size);
+	const auto temp_size = length() + strlen(rhs) + 1;
+	auto temp = new char[temp_size];
+	strcpy_s(temp, temp_size, string_);
+	strcpy_s(temp, temp_size, rhs);
 
-	strcpy_s(tmp_str, tmp_size, string_);
-	strcat_s(tmp_str, tmp_size, rhs);
+	const auto ret = std::make_unique<String>(temp);
 
-	const auto ret = std::make_unique<String>(tmp_str);
-	delete[] tmp_str;
+	delete[] temp;
 	return *ret;
 }
 
@@ -387,81 +405,77 @@ inline size_t String::max_size()
 
 inline void String::resize(const size_t length)
 {
-	if (length == length_)
+	if (length == this->length())
 	{
 		return;
 	}
 
-	const auto tmp_size = length + 1;
-	const auto tmp_length = length;
+	auto* temp = new char[length + 1];
 
-	auto* tmp_str = create_null_str(tmp_size);
-
-	if (tmp_length >= length_)
+	if (length >= this->length())
 	{
-		for (size_t i = 0; i < length_; ++i)
+		for (size_t i = 0; i < this->length(); ++i)
 		{
-			tmp_str[i] = string_[i];
+			temp[i] = string_[i];
 		}
 
-		for (auto i = length_; i < tmp_length; ++i)
+		for (auto i = this->length(); i < length; ++i)
 		{
 			const auto c = ' ';
-			tmp_str[i] = c;
+			temp[i] = c;
 		}
 	}
 	else
 	{
-		for (size_t i = 0; i < tmp_size; ++i)
+		for (size_t i = 0; i < length + 1; ++i)
 		{
-			tmp_str[i] = string_[i];
+			temp[i] = string_[i];
 		}
 	}
 
-	set_str_props(tmp_size);
-	strmove(tmp_str);
+	set_str_props(length + 1);
+	delete[] string_;
+	string_ = temp;
 }
 
 inline void String::resize(const size_t length, const char c)
 {
-	if (length == length_)
+	if (length == this->length())
 	{
 		return;
 	}
 
-	const auto tmp_size = length + 1;
-	const auto tmp_length = length;
+	auto* tmp_str = new char[length + 1];
 
-	auto* tmp_str = create_null_str(tmp_size);
-
-	if (tmp_length < length_)
+	if (length < this->length())
 	{
-		for (size_t i = 0; i < tmp_size; ++i)
+		for (size_t i = 0; i < length + 1; ++i)
 		{
 			tmp_str[i] = string_[i];
 		}
 	}
 	else
 	{
-		for (size_t i = 0; i < length_; ++i)
+		for (size_t i = 0; i < this->length(); ++i)
 		{
 			tmp_str[i] = string_[i];
 		}
 
-		for (auto i = length_; i < tmp_length; ++i)
+		for (auto i = this->length(); i < length; ++i)
 		{
 			tmp_str[i] = c;
 		}
 	}
 
-	set_str_props(tmp_size);
-	strmove(tmp_str);
+	tmp_str[length] = '\0';
+	set_str_props(length + 1);
+	delete[] string_;
+	string_ = tmp_str;
 }
 
 inline void String::reserve(const size_t capacity)
 {
-	realloc(capacity);
-	capacity_ = capacity;
+	allocate(capacity);
 }
 
 inline void String::push_back(const char c)
@@ -469,7 +483,7 @@ inline void String::push_back(const char c)
 	append(1, c);
 }
 
-inline size_t String::find(const String& str, size_t pos) const noexcept
+inline size_t String::find(const String& str, size_t pos) const
 {
 	auto* const result = strstr(string_, str.string_);
 
@@ -497,16 +511,16 @@ inline size_t String::find(const char* s, size_t pos) const
 
 inline size_t String::find(const char* s, const size_t pos, const size_t n) const
 {
-	auto* tmp_str = create_null_str(n + 1);
+	auto* temp = new char[n + 1];
 
 	for (size_t i = 0; i < n; ++i)
 	{
-		tmp_str[i] = s[i];
+		temp[i] = s[i];
 	}
 
-	auto* const result = strstr(string_, tmp_str);
+	auto* const result = strstr(string_, temp);
 
-	delete[] tmp_str;
+	delete[] temp;
 
 	const size_t index = result - string_;
 	if (result == nullptr)
@@ -517,9 +531,9 @@ inline size_t String::find(const char* s, const size_t pos, const size_t n) cons
 	return index;
 }
 
-inline size_t String::find(const char c, const size_t pos) const noexcept
+inline size_t String::find(const char c, const size_t pos) const
 {
-	for (auto i = pos; i < length_; ++i)
+	for (auto i = pos; i < this->length(); ++i)
 	{
 		if (string_[i] == c)
 		{
@@ -532,64 +546,43 @@ inline size_t String::find(const char c, const size_t pos) const noexcept
 
 inline String& String::replace(const size_t pos, const size_t len, const char* substr)
 {
-	realloc(size_ + strlen(substr));
+	allocate(size() + strlen(substr));
 	memcpy(string_ + pos, substr, strlen(substr));
 	return *this;
 }
 
 inline String& String::replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen)
 {
-	realloc(size_ + str.length_);
-	memcpy(string_ + pos, str.string_, str.length_);
+	allocate(length() + str.length() + 1);
+	memcpy(string_ + pos, str.string_, str.length());
 	return *this;
 }
 
-inline void String::strmove(char* string)
-{
-	delete[] string_;
-	string_ = string;
-}
-
-inline char* String::create_null_str(const size_t size)
-{
-	auto* tmp_str = new char[size];
-	memset(tmp_str, '\0', size * sizeof(char));
-	return tmp_str;
-}
-
-inline void String::alloc(const size_t size)
-{
-	auto* tmp_str = create_null_str(size);
-
-	if (string_ != nullptr)
-	{
-		strcpy_s(tmp_str, size, string_);
-	}
-
-	strmove(tmp_str);
-}
-
-inline void String::realloc(const size_t size)
+inline void String::allocate(const size_t size)
 {
 	if (capacity_ < size)
 	{
-		auto* tmp_str = create_null_str(size);
+		auto* temp = new char[size];
+		capacity_ = size;
+		size_ = size;
 
 		if (string_ != nullptr)
 		{
-			strcpy_s(tmp_str, size, string_);
+			strcpy_s(temp, size, string_);
 		}
 
-		strmove(tmp_str);
+		delete[] string_;
+		string_ = temp;
 	}
 }
 
+/**
+ * \brief Sets size, length and capacity for normally created string
+ * assuming that length = size - 1 and capacity = size.
+ * \param size length of string + newline character.
+ */
 inline void String::set_str_props(const size_t size)
 {
 	size_ = size;
 	length_ = size - 1;
-	if (capacity_ < size_)
-	{
-		capacity_ = size_;
-	}
 }
