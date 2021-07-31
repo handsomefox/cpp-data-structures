@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <ostream>
 
 class String
 {
@@ -9,28 +9,54 @@ public:
 	String(const char* other);
 	String(const String& other);
 	String(String&& other) noexcept;
+	
 	~String();
+	
 	char& at(size_t pos);
+	const char& at(size_t pos) const;
+
+	char& back();
+	char& back() const;
+	char& front() const;
+	char& front();
+
+	static const size_t npos = -1;
+	
 	String& append(const String& str);
 	String& append(const char* str);
 	String& append(const String& str, size_t subpos, size_t sublen = npos);
 	String& append(const char* str, size_t n);
 	String& append(size_t n, char c);
-	const char& at(size_t pos) const;
-	char& back();
-	char& back() const;
-	char& front() const;
-	char& front();
+	
+
 	bool empty() const;
 	void clear();
+	
 	const char* c_str() const;
+	
 	size_t capacity() const;
 	size_t capacity();
 	size_t size() const;
 	size_t size();
-	void shrink_to_fit();
 	size_t length() const;
 	size_t length();
+	
+	void shrink_to_fit();
+	static size_t max_size();
+	void resize(size_t length);
+	void resize(size_t length, char c);
+	void reserve(size_t capacity = 0);
+
+
+	void push_back(char c);
+	String& replace(size_t pos, size_t len, const char* substr);
+	String& replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen = npos);
+	
+	size_t find(const String& str, size_t pos = 0) const;
+	size_t find(const char* s, size_t pos = 0) const;
+	size_t find(const char* s, size_t pos, size_t n) const;
+	size_t find(char c, size_t pos = 0) const;
+
 	String& operator=(const String& other);
 	String& operator=(const char* str);
 	constexpr String& operator=(String&& other) noexcept;
@@ -41,48 +67,47 @@ public:
 	String operator+(const String& rhs) const;
 	String operator+(const char* rhs) const;
 	friend std::ostream& operator<<(std::ostream& os, const String& str);
-	static const size_t npos = -1;
-	static size_t max_size();
-	void resize(size_t length);
-	void resize(size_t length, char c);
-	void reserve(size_t capacity = 0);
-	void push_back(char c);
-	size_t find(const String& str, size_t pos = 0) const;
-	size_t find(const char* s, size_t pos = 0) const;
-	size_t find(const char* s, size_t pos, size_t n) const;
-	size_t find(char c, size_t pos = 0) const;
-	String& replace(size_t pos, size_t len, const char* substr);
-	String& replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen = npos);
 
 private:
+	
 	char* string_ = nullptr;
 	size_t size_{ 0 };
 	size_t length_{ 0 };
 	size_t capacity_{ 0 };
 
 	void allocate(size_t size);
-	void set_str_props(size_t size);
+	void set_string_properties(size_t size);
+	void set_string_properties(const String& string);
+	size_t calculate_required_capacity(const char* lhs, const char* rhs) const;
+	size_t calculate_required_capacity(const char* string) const;
+	char* allocate_temp_buffer(size_t size) const;
+	void copy_string(char* dst, size_t buff_size, char const* src) const;
+	void concat_string(char* dst, size_t buff_size, char const* src) const;
+	void take_ownership_of_string(char* string);
+	const char* find_substring(const char* string, const char* find) const;
+	char* find_substring(char* string, char* find) const;
 };
 
 inline String::String(const char* other)
 {
-	set_str_props(strlen(other) + 1);
-	allocate(this->size());
-	strcpy_s(this->string_, this->size(), other);
+	const auto capacity = calculate_required_capacity(other);
+	set_string_properties(capacity);
+	allocate(capacity);
+	copy_string(string_, size(), other);
 }
 
 inline String::String(const String& other)
 {
-	set_str_props(other.size());
-	allocate(this->size());
-	strcpy_s(this->string_, size(), other.string_);
+	const auto capacity = calculate_required_capacity(other.c_str());
+	set_string_properties(capacity);
+	allocate(capacity);
+	copy_string(string_, size(), other.c_str());
 }
 
 inline String::String(String&& other) noexcept
 {
-	set_str_props(other.size());
-	delete[] string_;
-	string_ = other.string_;
+	set_string_properties(other);
+	take_ownership_of_string(other.string_);
 }
 
 inline String::~String()
@@ -92,69 +117,68 @@ inline String::~String()
 
 inline char& String::at(const size_t pos)
 {
-	if (length() < pos)
-	{
-		__debugbreak();
-	}
+	//if (length() < pos)
+	//{
+	//	__debugbreak();
+	//}
 	return string_[pos];
 }
 
 inline String& String::append(const String& str)
 {
-	const auto temp_size = str.length() + this->length() + 1;
+	const auto capacity = calculate_required_capacity(c_str(), str.c_str());
 
 	if (string_ == nullptr)
 	{
-		const auto temp = new char[temp_size];
-		strcpy_s(temp, temp_size, str.string_);
-		string_ = temp;
+		const auto temp = allocate_temp_buffer(capacity);
+		copy_string(temp, capacity, str.string_);
+		take_ownership_of_string(temp);
 	}
 	else
 	{
-		allocate(temp_size);
-		strcat_s(string_, temp_size, str.string_);
+		allocate(capacity);
+		concat_string(string_, capacity, str.string_);
 	}
-	set_str_props(temp_size);
+	set_string_properties(capacity);
 
 	return *this;
 }
 
 inline String& String::append(const char* str)
 {
-	const auto temp_size = strlen(str) + this->length() + 1;
+	const auto capacity = calculate_required_capacity(c_str(), str);
 
 	if (string_ == nullptr)
 	{
-		auto temp = new char[temp_size];
-		strcpy_s(temp, temp_size, str);
-		string_ = temp;
+		const auto temp = allocate_temp_buffer(capacity);
+		copy_string(temp, capacity, str);
+		take_ownership_of_string(temp);
 	}
 	else
 	{
-		allocate(temp_size);
-		strcat_s(string_, temp_size, str);
+		allocate(capacity);
+		concat_string(string_, capacity, str);
 	}
-	set_str_props(temp_size);
+	set_string_properties(capacity);
 
 	return *this;
 }
 
 inline String& String::append(const String& str, const size_t subpos, const size_t sublen)
 {
-	const auto temp_size = str.length() + sublen + 1;
-	allocate(temp_size);
+	const auto capacity = str.size() + sublen;
+	allocate(capacity);
 
-	const auto temp = new char[sublen + 1];
+	const auto temp = allocate_temp_buffer(sublen + 1);
 
 	for (size_t i = 0; i < sublen; ++i)
 	{
 		temp[i] = str[subpos + i];
 	}
-
 	temp[sublen] = '\0';
 
-	strcat_s(string_, temp_size, temp);
-	set_str_props(temp_size);
+	concat_string(string_, capacity, temp);
+	set_string_properties(capacity);
 
 	delete[] temp;
 	return *this;
@@ -162,18 +186,19 @@ inline String& String::append(const String& str, const size_t subpos, const size
 
 inline String& String::append(const char* str, const size_t n)
 {
-	const auto tmp_size = length() + n + 1;
-	allocate(tmp_size);
+	const auto capacity = size() + n;
+	allocate(capacity);
 
-	const auto temp = new char[n + 1];
+	const auto temp = allocate_temp_buffer(n + 1);
 
 	for (size_t i = 0; i < n; ++i)
 	{
 		temp[i] = str[i];
 	}
 	temp[n] = '\0';
-	strcat_s(string_, tmp_size, temp);
-	set_str_props(tmp_size);
+	
+	concat_string(string_, capacity, temp);
+	set_string_properties(capacity);
 
 	delete[] temp;
 	return *this;
@@ -181,18 +206,19 @@ inline String& String::append(const char* str, const size_t n)
 
 inline String& String::append(const size_t n, const char c)
 {
-	auto* temp = new char[n + 1];
+	const auto temp = allocate_temp_buffer(n + 1);
 
 	for (size_t i = 0; i < n; ++i)
 	{
 		temp[i] = c;
 	}
 	temp[n] = '\0';
-	const auto tmp_size = length() + n + 1;
-	allocate(tmp_size);
+	
+	const auto capacity = size() + n;
+	allocate(capacity);
 
-	strcat_s(string_, tmp_size, temp);
-	set_str_props(tmp_size);
+	concat_string(string_, capacity, temp);
+	set_string_properties(capacity);
 
 	delete[] temp;
 	return *this;
@@ -200,10 +226,10 @@ inline String& String::append(const size_t n, const char c)
 
 inline const char& String::at(const size_t pos) const
 {
-	if (length() < pos)
-	{
-		__debugbreak();
-	}
+	//if (length() < pos)
+	//{
+	//	__debugbreak();
+	//}
 	return string_[pos];
 }
 
@@ -285,13 +311,12 @@ inline void String::shrink_to_fit()
 	{
 		return;
 	}
+	const auto shrinked_capacity = size();
+	const auto shrinked_string = allocate_temp_buffer(shrinked_capacity);
+	copy_string(shrinked_string, shrinked_capacity, string_);
 
-	const auto temp = new char[size()];
-	strcpy_s(temp, size(), string_);
-
-	delete[] string_;
-	string_ = temp;
-	set_str_props(size());
+	take_ownership_of_string(shrinked_string);
+	set_string_properties(size());
 }
 
 inline size_t String::length() const
@@ -311,9 +336,9 @@ inline String& String::operator=(const String& other)
 		return *this;
 	}
 
-	set_str_props(other.size());
+	set_string_properties(other);
 	allocate(size());
-	strcpy_s(string_, size(), other.string_);
+	copy_string(string_, size(), other.string_);
 
 	return *this;
 }
@@ -325,23 +350,22 @@ inline String& String::operator=(const char* str)
 		return *this;
 	}
 
-	set_str_props(strlen(str) + 1);
+	set_string_properties(str);
 	allocate(size());
-	strcpy_s(string_, capacity(), str);
+	copy_string(string_, size(), str);
 
 	return *this;
 }
 
-constexpr auto String::operator=(String&& other) noexcept -> String&
+constexpr String& String::operator=(String&& other) noexcept
 {
 	if (this == &other)
 	{
 		return *this;
 	}
 
-	set_str_props(other.size());
-	delete[] string_;
-	string_ = other.string_;
+	set_string_properties(other);
+	take_ownership_of_string(other.string_);
 
 	return *this;
 }
@@ -368,10 +392,10 @@ inline bool String::operator==(const char* rhs) const
 
 inline String String::operator+(const String& rhs) const
 {
-	const auto temp_size = length() + rhs.length() + 1;
-	auto temp = new char[temp_size];
-	strcpy_s(temp, temp_size, string_);
-	strcpy_s(temp, temp_size, rhs.string_);
+	const auto capacity = calculate_required_capacity(c_str(), rhs.c_str());
+	const auto temp = allocate_temp_buffer(capacity);
+	copy_string(temp, capacity, string_);
+	concat_string(temp, capacity, rhs.string_);
 
 	const auto ret = std::make_unique<String>(temp);
 
@@ -381,10 +405,10 @@ inline String String::operator+(const String& rhs) const
 
 inline String String::operator+(const char* rhs) const
 {
-	const auto temp_size = length() + strlen(rhs) + 1;
-	auto temp = new char[temp_size];
-	strcpy_s(temp, temp_size, string_);
-	strcpy_s(temp, temp_size, rhs);
+	const auto capacity = calculate_required_capacity(c_str(), rhs);
+	auto temp = allocate_temp_buffer(capacity);
+	copy_string(temp, capacity, string_);
+	concat_string(temp, capacity, rhs);
 
 	const auto ret = std::make_unique<String>(temp);
 
@@ -410,7 +434,8 @@ inline void String::resize(const size_t length)
 		return;
 	}
 
-	auto* temp = new char[length + 1];
+	const auto capacity = length + 1;
+	const auto temp = allocate_temp_buffer(capacity);
 
 	if (length >= this->length())
 	{
@@ -427,15 +452,14 @@ inline void String::resize(const size_t length)
 	}
 	else
 	{
-		for (size_t i = 0; i < length + 1; ++i)
+		for (size_t i = 0; i < capacity; ++i)
 		{
 			temp[i] = string_[i];
 		}
 	}
 
-	set_str_props(length + 1);
-	delete[] string_;
-	string_ = temp;
+	set_string_properties(capacity);
+	take_ownership_of_string(temp);
 }
 
 inline void String::resize(const size_t length, const char c)
@@ -445,32 +469,32 @@ inline void String::resize(const size_t length, const char c)
 		return;
 	}
 
-	auto* tmp_str = new char[length + 1];
+	const auto capacity = length + 1;
+	const auto temp = allocate_temp_buffer(capacity);
 
 	if (length < this->length())
 	{
-		for (size_t i = 0; i < length + 1; ++i)
+		for (size_t i = 0; i < capacity; ++i)
 		{
-			tmp_str[i] = string_[i];
+			temp[i] = string_[i];
 		}
 	}
 	else
 	{
 		for (size_t i = 0; i < this->length(); ++i)
 		{
-			tmp_str[i] = string_[i];
+			temp[i] = string_[i];
 		}
 
 		for (auto i = this->length(); i < length; ++i)
 		{
-			tmp_str[i] = c;
+			temp[i] = c;
 		}
 	}
-
-	tmp_str[length] = '\0';
-	set_str_props(length + 1);
-	delete[] string_;
-	string_ = tmp_str;
+	temp[length] = '\0';
+	
+	set_string_properties(capacity);
+	take_ownership_of_string(temp);
 }
 
 inline void String::reserve(const size_t capacity)
@@ -485,20 +509,20 @@ inline void String::push_back(const char c)
 
 inline size_t String::find(const String& str, size_t pos) const
 {
-	auto* const result = strstr(string_, str.string_);
+	const auto result = find_substring(string_, str.string_);
 
 	const size_t index = result - string_;
 	if (result == nullptr)
 	{
 		return npos;
 	}
-
+	
 	return index;
 }
 
 inline size_t String::find(const char* s, size_t pos) const
 {
-	auto* const result = strstr(string_, s);
+	const auto result = find_substring(string_, s);
 
 	const size_t index = result - string_;
 	if (result == nullptr)
@@ -511,14 +535,14 @@ inline size_t String::find(const char* s, size_t pos) const
 
 inline size_t String::find(const char* s, const size_t pos, const size_t n) const
 {
-	auto* temp = new char[n + 1];
+	const auto temp = allocate_temp_buffer(n + 1);
 
 	for (size_t i = 0; i < n; ++i)
 	{
 		temp[i] = s[i];
 	}
 
-	auto* const result = strstr(string_, temp);
+	const auto result = find_substring(string_, temp);
 
 	delete[] temp;
 
@@ -533,7 +557,7 @@ inline size_t String::find(const char* s, const size_t pos, const size_t n) cons
 
 inline size_t String::find(const char c, const size_t pos) const
 {
-	for (auto i = pos; i < this->length(); ++i)
+	for (auto i = pos; i < length(); ++i)
 	{
 		if (string_[i] == c)
 		{
@@ -562,27 +586,81 @@ inline void String::allocate(const size_t size)
 {
 	if (capacity_ < size)
 	{
-		auto* temp = new char[size];
+		const auto temp = allocate_temp_buffer(size);
 		capacity_ = size;
 		size_ = size;
 
 		if (string_ != nullptr)
 		{
-			strcpy_s(temp, size, string_);
+			copy_string(temp, size, string_);
 		}
 
-		delete[] string_;
-		string_ = temp;
+		take_ownership_of_string(temp);
 	}
 }
 
-/**
- * \brief Sets size, length and capacity for normally created string
- * assuming that length = size - 1 and capacity = size.
- * \param size length of string + newline character.
- */
-inline void String::set_str_props(const size_t size)
+inline void String::set_string_properties(const size_t size)
 {
 	size_ = size;
 	length_ = size - 1;
+}
+
+inline void String::set_string_properties(const String& string)
+{
+	size_ = string.size_;
+	length_ = string.length_;
+	capacity_ = string.capacity_;
+}
+
+inline size_t String::calculate_required_capacity(const char* lhs, const char* rhs) const
+{
+	size_t l{ 0 }, r{0};
+	if (lhs != nullptr)
+	{
+		l = strlen(lhs);
+	}
+	if (rhs != nullptr)
+	{
+		r = strlen(rhs);
+	}
+	return l + r + 1;
+}
+
+inline size_t String::calculate_required_capacity(const char* string) const
+{
+	if (string != nullptr)
+		return strlen(string) + 1;
+	return 0;
+}
+
+inline char* String::allocate_temp_buffer(const size_t size) const
+{
+	const auto temp = new char[size];
+	return temp;
+}
+
+inline void String::copy_string(char* dst, const size_t buff_size, char const* src) const
+{
+	strcpy_s(dst, buff_size, src);
+}
+
+inline void String::concat_string(char* dst, const size_t buff_size, char const* src) const
+{
+	strcat_s(dst, buff_size, src);
+}
+
+inline void String::take_ownership_of_string(char* string)
+{
+	delete[] string_;
+	string_ = string;
+}
+
+inline const char* String::find_substring(const char* string, const char* find) const
+{
+	return strstr(string, find);
+}
+
+inline char* String::find_substring(char* string, char* find) const
+{
+	return strstr(string, find);
 }
