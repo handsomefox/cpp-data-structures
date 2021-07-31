@@ -1,10 +1,10 @@
 #pragma once
 
-#include <iostream>
-
 #include "Array.h"
 #include "String.h"
 #include "Vector.h"
+
+#include <iostream>
 
 inline void RunArrayTest()
 {

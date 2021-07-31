@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Iterator.h"
+
 template <typename T>
 class Vector
 {
@@ -10,29 +11,38 @@ public:
 	explicit Vector(size_t capacity);
 	Vector(const Vector& vec);
 	Vector(Vector&& vec) noexcept;
+	
 	~Vector();
+	
 	T& front();
 	T& back();
 	T* data();
+	
+	void push_back(T data);
+	void pop_back();
+	template <typename... Args>
+	T& emplace_back(Args &&...args);
+	
 	void reserve(size_t new_capacity);
+	
 	bool empty() const;
+	void clear();
+	void resize(size_t size);
+
 	size_t size();
 	size_t size() const;
 	size_t capacity();
 	size_t capacity() const;
-	void clear();
-	void push_back(T data);
-	template <typename... Args>
-	T& emplace_back(Args &&...args);
-	void pop_back();
-	void resize(const size_t size);
-	void print();
+	
+	Iterator<T> begin();
+	Iterator<T> end();
+
 	const T& operator[](size_t index) const;
 	constexpr T& operator[](size_t index);
 	constexpr Vector& operator=(const Vector& vec);
 	constexpr Vector& operator=(Vector&& vec) noexcept;
-	Iterator<T> begin();
-	Iterator<T> end();
+	
+	void print();
 
 private:
 	T* data_ = nullptr;

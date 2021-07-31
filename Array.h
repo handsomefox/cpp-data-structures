@@ -6,22 +6,23 @@ template <typename T, size_t N>
 class Array
 {
 public:
-	constexpr Array();
+	constexpr Array() = default;
+	
 	constexpr bool empty();
 	constexpr size_t size() noexcept;
+	
 	constexpr T* data() noexcept;
 	constexpr const T* data() const noexcept;
-	constexpr const T& operator[](const size_t& index) const noexcept;
-	constexpr T& operator[](const size_t& index) noexcept;
 	constexpr Iterator<T> begin();
 	constexpr Iterator<T> end();
+	
+	constexpr const T& operator[](const size_t& index) const noexcept;
+	constexpr T& operator[](const size_t& index) noexcept;
+
 
 private:
-	T data_[N];
+	T data_[N] {};
 };
-
-template <typename T, size_t N>
-constexpr Array<T, N>::Array() = default;
 
 template <typename T, size_t N>
 constexpr bool Array<T, N>::empty()
