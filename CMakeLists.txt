@@ -8,11 +8,11 @@ project ("cpp-data-structures")
 
 SET(sources ${sources} 
     "main.cpp"
-    "Array.h"
-    "Iterator.h"
-    "String.h"
-    "Vector.h"
-    "Test.h"
+    "Array.hpp"
+    "Iterator.hpp"
+    "String.hpp"
+    "Vector.hpp"
+    "Test.hpp"
 )
 # Add source to this project's executable.
 add_executable (cpp-data-structures ${sources})

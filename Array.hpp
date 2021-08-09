@@ -1,27 +1,26 @@
 #pragma once
 
-#include "Iterator.h"
+#include "Iterator.hpp"
 
 template <typename T, size_t N>
 class Array
 {
 public:
 	constexpr Array() = default;
-	
+
 	constexpr bool empty();
 	constexpr size_t size() noexcept;
-	
-	constexpr T* data() noexcept;
-	constexpr const T* data() const noexcept;
+
+	constexpr T *data() noexcept;
+	constexpr const T *data() const noexcept;
 	constexpr Iterator<T> begin();
 	constexpr Iterator<T> end();
-	
-	constexpr const T& operator[](const size_t& index) const noexcept;
-	constexpr T& operator[](const size_t& index) noexcept;
 
+	constexpr const T &operator[](const size_t &index) const noexcept;
+	constexpr T &operator[](const size_t &index) noexcept;
 
 private:
-	T data_[N] {};
+	T data_[N]{};
 };
 
 template <typename T, size_t N>
@@ -37,25 +36,25 @@ constexpr size_t Array<T, N>::size() noexcept
 }
 
 template <typename T, size_t N>
-constexpr T* Array<T, N>::data() noexcept
+constexpr T *Array<T, N>::data() noexcept
 {
 	return data_;
 }
 
 template <typename T, size_t N>
-constexpr const T* Array<T, N>::data() const noexcept
+constexpr const T *Array<T, N>::data() const noexcept
 {
 	return data_;
 }
 
 template <typename T, size_t N>
-constexpr const T& Array<T, N>::operator[](const size_t& index) const noexcept
+constexpr const T &Array<T, N>::operator[](const size_t &index) const noexcept
 {
 	return data_[index];
 }
 
 template <typename T, size_t N>
-constexpr T& Array<T, N>::operator[](const size_t& index) noexcept
+constexpr T &Array<T, N>::operator[](const size_t &index) noexcept
 {
 	return data_[index];
 }

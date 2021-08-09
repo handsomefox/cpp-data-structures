@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Array.h"
-#include "String.h"
-#include "Vector.h"
+#include "Array.hpp"
+#include "String.hpp"
+#include "Vector.hpp"
 
 #include <iostream>
 
