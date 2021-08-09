@@ -1,6 +1,11 @@
 #pragma once
 
 #include <ostream>
+#include "Iterator.hpp"
+#ifdef container_type
+#undef container_type
+#define container_type String
+#endif
 
 class String
 {
@@ -9,38 +14,38 @@ public:
 	String(const char* other);
 	String(const String& other);
 	String(String&& other) noexcept;
-	
+
 	~String();
-	
+
 	char& at(size_t pos);
-	const char& at(size_t pos) const;
+	[[nodiscard]] const char& at(size_t pos) const;
 
 	char& back();
-	char& back() const;
-	char& front() const;
+	[[nodiscard]] char& back() const;
+	[[nodiscard]] char& front() const;
 	char& front();
 
-	static const size_t npos = -1;
-	
+	static constexpr size_t npos = -1;
+
 	String& append(const String& str);
 	String& append(const char* str);
 	String& append(const String& str, size_t subpos, size_t sublen = npos);
 	String& append(const char* str, size_t n);
 	String& append(size_t n, char c);
-	
 
-	bool empty() const;
+
+	[[nodiscard]] bool empty() const;
 	void clear();
-	
-	const char* c_str() const;
-	
-	size_t capacity() const;
+
+	[[nodiscard]] const char* c_str() const;
+
+	[[nodiscard]] size_t capacity() const;
 	size_t capacity();
-	size_t size() const;
+	[[nodiscard]] size_t size() const;
 	size_t size();
-	size_t length() const;
+	[[nodiscard]] size_t length() const;
 	size_t length();
-	
+
 	void shrink_to_fit();
 	static size_t max_size();
 	void resize(size_t length);
@@ -51,11 +56,11 @@ public:
 	void push_back(char c);
 	String& replace(size_t pos, size_t len, const char* substr);
 	String& replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen = npos);
-	
-	size_t find(const String& str, size_t pos = 0) const;
+
+	[[nodiscard]] size_t find(const String& str, size_t pos = 0) const;
 	size_t find(const char* s, size_t pos = 0) const;
 	size_t find(const char* s, size_t pos, size_t n) const;
-	size_t find(char c, size_t pos = 0) const;
+	[[nodiscard]] size_t find(char c, size_t pos = 0) const;
 
 	String& operator=(const String& other);
 	String& operator=(const char* str);
@@ -68,8 +73,10 @@ public:
 	String operator+(const char* rhs) const;
 	friend std::ostream& operator<<(std::ostream& os, const String& str);
 
+	[[nodiscard]] Iterator begin() const;
+	[[nodiscard]] Iterator end() const;
 private:
-	
+
 	char* string_ = nullptr;
 	size_t size_{ 0 };
 	size_t length_{ 0 };
@@ -78,14 +85,14 @@ private:
 	void allocate(size_t size);
 	void set_string_properties(size_t size);
 	void set_string_properties(const String& string);
-	size_t calculate_required_capacity(const char* lhs, const char* rhs) const;
-	size_t calculate_required_capacity(const char* string) const;
-	char* allocate_temp_buffer(size_t size) const;
+	static size_t calculate_required_capacity(const char* lhs, const char* rhs);
+	static size_t calculate_required_capacity(const char* string);
+	[[nodiscard]] static char* allocate_temp_buffer(size_t size);
 	void copy_string(char* dst, size_t buff_size, char const* src) const;
 	void concat_string(char* dst, size_t buff_size, char const* src) const;
 	void take_ownership_of_string(char* string);
 	const char* find_substring(const char* string, const char* find) const;
-	char* find_substring(char* string, char* find) const;
+	char* find_substring(char* string, const char* find) const;
 };
 
 inline String::String(const char* other)
@@ -196,7 +203,7 @@ inline String& String::append(const char* str, const size_t n)
 		temp[i] = str[i];
 	}
 	temp[n] = '\0';
-	
+
 	concat_string(string_, capacity, temp);
 	set_string_properties(capacity);
 
@@ -213,7 +220,7 @@ inline String& String::append(const size_t n, const char c)
 		temp[i] = c;
 	}
 	temp[n] = '\0';
-	
+
 	const auto capacity = size() + n;
 	allocate(capacity);
 
@@ -311,11 +318,11 @@ inline void String::shrink_to_fit()
 	{
 		return;
 	}
-	const auto shrinked_capacity = size();
-	const auto shrinked_string = allocate_temp_buffer(shrinked_capacity);
-	copy_string(shrinked_string, shrinked_capacity, string_);
+	const auto required_capacity = size();
+	const auto string = allocate_temp_buffer(required_capacity);
+	copy_string(string, required_capacity, string_);
 
-	take_ownership_of_string(shrinked_string);
+	take_ownership_of_string(string);
 	set_string_properties(size());
 }
 
@@ -446,7 +453,7 @@ inline void String::resize(const size_t length)
 
 		for (auto i = this->length(); i < length; ++i)
 		{
-			const auto c = ' ';
+			constexpr auto c = ' ';
 			temp[i] = c;
 		}
 	}
@@ -492,7 +499,7 @@ inline void String::resize(const size_t length, const char c)
 		}
 	}
 	temp[length] = '\0';
-	
+
 	set_string_properties(capacity);
 	take_ownership_of_string(temp);
 }
@@ -516,7 +523,7 @@ inline size_t String::find(const String& str, size_t pos) const
 	{
 		return npos;
 	}
-	
+
 	return index;
 }
 
@@ -575,11 +582,21 @@ inline String& String::replace(const size_t pos, const size_t len, const char* s
 	return *this;
 }
 
-inline String& String::replace(size_t pos, size_t len, const String& str, size_t subpos, size_t sublen)
+// TODO: Implement using subpos and sublen
+inline String& String::replace(const size_t pos, size_t len, const String& str, size_t subpos, size_t sublen)
 {
 	allocate(length() + str.length() + 1);
 	memcpy(string_ + pos, str.string_, str.length());
 	return *this;
+}
+
+inline Iterator String::begin() const
+{
+	return Iterator(&string_[0]);
+}
+inline Iterator String::end() const
+{
+	return Iterator(&string_[size_]);
 }
 
 inline void String::allocate(const size_t size)
@@ -612,9 +629,9 @@ inline void String::set_string_properties(const String& string)
 	capacity_ = string.capacity_;
 }
 
-inline size_t String::calculate_required_capacity(const char* lhs, const char* rhs) const
+inline size_t String::calculate_required_capacity(const char* lhs, const char* rhs)
 {
-	size_t l{ 0 }, r{0};
+	size_t l{ 0 }, r{ 0 };
 	if (lhs != nullptr)
 	{
 		l = strlen(lhs);
@@ -626,14 +643,14 @@ inline size_t String::calculate_required_capacity(const char* lhs, const char* r
 	return l + r + 1;
 }
 
-inline size_t String::calculate_required_capacity(const char* string) const
+inline size_t String::calculate_required_capacity(const char* string)
 {
 	if (string != nullptr)
 		return strlen(string) + 1;
 	return 0;
 }
 
-inline char* String::allocate_temp_buffer(const size_t size) const
+inline char* String::allocate_temp_buffer(const size_t size)
 {
 	const auto temp = new char[size];
 	return temp;
@@ -660,7 +677,7 @@ inline const char* String::find_substring(const char* string, const char* find) 
 	return strstr(string, find);
 }
 
-inline char* String::find_substring(char* string, char* find) const
+inline char* String::find_substring(char* string, const char* find) const
 {
 	return strstr(string, find);
 }

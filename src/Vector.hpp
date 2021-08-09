@@ -1,7 +1,11 @@
 #pragma once
 #include <iostream>
-
+#include <string>
 #include "Iterator.hpp"
+#ifdef container_type
+#undef container_type
+#define container_type Vector
+#endif
 
 template <typename T>
 class Vector
@@ -11,37 +15,39 @@ public:
 	explicit Vector(size_t capacity);
 	Vector(const Vector& vec);
 	Vector(Vector&& vec) noexcept;
-	
+	Vector(const std::initializer_list<T>& list);
+
 	~Vector();
-	
+
 	T& front();
 	T& back();
 	T* data();
-	
+
 	void push_back(T data);
 	void pop_back();
 	template <typename... Args>
 	T& emplace_back(Args &&...args);
-	
+
 	void reserve(size_t new_capacity);
-	
-	bool empty() const;
+
+	[[nodiscard]] bool empty() const;
+
 	void clear();
 	void resize(size_t size);
 
 	size_t size();
-	size_t size() const;
 	size_t capacity();
-	size_t capacity() const;
-	
-	Iterator<T> begin();
-	Iterator<T> end();
+	[[nodiscard]] size_t size() const;
+	[[nodiscard]] size_t capacity() const;
+
+	Iterator begin();
+	Iterator end();
 
 	const T& operator[](size_t index) const;
 	constexpr T& operator[](size_t index);
 	constexpr Vector& operator=(const Vector& vec);
 	constexpr Vector& operator=(Vector&& vec) noexcept;
-	
+
 	void print();
 
 private:
@@ -79,6 +85,21 @@ Vector<T>::Vector(Vector&& vec) noexcept
 	size_ = vec.size_;
 	capacity_ = vec.capacity_;
 	data_ = std::move(vec.data_);
+}
+
+template <typename T>
+Vector<T>::Vector(const std::initializer_list<T>& list)
+{
+	data_ = new T[list.size()];
+	size_t count = 0;
+	for (auto const& element : list)
+	{
+		data_[count] = element;
+		++count;
+	}
+
+	size_ = list.size();
+	capacity_ = list.size();
 }
 
 template <typename T>
@@ -199,17 +220,31 @@ void Vector<T>::resize(const size_t size)
 {
 	T* newData = new T[size];
 
-	for (size_t i = 0; i < size; ++i)
+	if (size < size_)
 	{
-		if (i < size_)
+		for (size_t i = 0; i < size; ++i)
 		{
 			newData[i] = data_[i];
 		}
-		else if (std::is_integral_v<T>)
+	}
+
+	else if (size > size_)
+	{
+		for (size_t i = 0; i < size_; ++i)
 		{
-			newData[i] = static_cast<T>(0);
+			newData[i] = data_[i];
+		}
+
+		for (size_t i = size_; i < size; ++i)
+		{
+			if (std::is_integral_v<T>)
+			{
+				char zero = '\0';
+				newData[i] = zero;
+			}
 		}
 	}
+
 	delete[] data_;
 
 	size_ = size;
@@ -273,13 +308,13 @@ constexpr Vector<T>& Vector<T>::operator=(Vector&& vec) noexcept
 }
 
 template <typename T>
-Iterator<T> Vector<T>::begin()
+Iterator Vector<T>::begin()
 {
-	return Iterator<T>(&data_[0]);
+	return Iterator(&data_[0]);
 }
 
 template <typename T>
-Iterator<T> Vector<T>::end()
+Iterator Vector<T>::end()
 {
-	return Iterator<T>(&data_[size_]);
+	return Iterator(&data_[size_]);
 }

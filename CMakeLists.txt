@@ -1,20 +1,12 @@
-﻿# CMakeList.txt : CMake project for cpp-data-structures, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
-set(CMAKE_CXX_STANDARD 14)
+﻿cmake_minimum_required (VERSION 3.8)
+set(CMAKE_CXX_STANDARD 17)
 
-project ("cpp-data-structures")
+project(cpp-data-structures)
 
-SET(sources ${sources} 
-    "main.cpp"
-    "Array.hpp"
-    "Iterator.hpp"
-    "String.hpp"
-    "Vector.hpp"
-    "Test.hpp"
-)
-# Add source to this project's executable.
-add_executable (cpp-data-structures ${sources})
+include_directories(src)
 
-# TODO: Add tests and install targets if needed.
+add_subdirectory(src)
+add_subdirectory(tests)
+
+set(gtest_disable_pthreads ON)
+add_subdirectory(lib/googletest)
