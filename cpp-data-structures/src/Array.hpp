@@ -63,7 +63,7 @@ namespace cpp
     public:
         constexpr Array() = default;
 
-        explicit constexpr Array(std::initializer_list<T> list)
+        explicit constexpr Array(const std::initializer_list<T>& list)
         {
             size_t count = 0;
             for (auto const& element : list)
@@ -84,7 +84,7 @@ namespace cpp
         [[nodiscard]] constexpr const T& front() const { return m_data[0]; }
         constexpr T& front() { return m_data[0]; }
 
-        [[nodiscard]] constexpr const T& back() const { return m_data[N]; }
+        [[nodiscard]] constexpr const T& back() const { return m_data[N - 1]; }
         constexpr T& back() { return m_data[N]; }
 
         constexpr T* data() noexcept { return m_data; }
