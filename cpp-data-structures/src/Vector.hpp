@@ -68,29 +68,25 @@ namespace cpp {
 			m_data = allocate(capacity);
 			m_capacity = capacity;
 		}
-
-		constexpr Vector(const Vector& vec)
+		constexpr Vector(const Vector& other)
 		{
-			m_data = allocate(vec.m_capacity);
+			m_data = allocate(other.m_capacity);
+			m_size = other.m_size;
+			m_capacity = other.m_capacity;
 
-			for (size_t i = 0; i < vec.m_size; ++i)
-				m_data[i] = vec.m_data[i];
-
-			m_size = vec.m_size;
-			m_capacity = vec.m_capacity;
+			std::copy(other.begin(), other.end(), m_data);
 		}
-		constexpr Vector(Vector&& vec) noexcept
+		constexpr Vector(Vector&& other) noexcept
 		{
-			m_data = std::move(vec.m_data);
-			m_size = std::move(vec.m_size);
-			m_capacity = std::move(vec.m_capacity);
+			m_data = std::move(other.m_data);
+			m_size = std::move(other.m_size);
+			m_capacity = std::move(other.m_capacity);
 		}
 		constexpr Vector(const std::initializer_list<T>& list)
 		{
 			m_size = list.size();
 			m_capacity = m_size;
-
-			m_data = allocate(m_size);
+			m_data = allocate(m_capacity);
 
 			std::copy(list.begin(), list.end(), m_data);
 		}
@@ -137,9 +133,7 @@ namespace cpp {
 			if (new_capacity > m_capacity)
 			{
 				auto new_block = allocate(new_capacity);
-
-				for (size_t i = 0; i < m_size; ++i)
-					new_block[i] = std::move(m_data[i]);
+				std::move(begin(), end(), new_block);
 
 				deallocate(m_data);
 				m_data = new_block;
@@ -155,8 +149,7 @@ namespace cpp {
 			{
 				auto new_block = allocate(m_size);
 
-				for (size_t i = 0; i < m_size; ++i)
-					new_block[i] = std::move(m_data[i]);
+				std::move(begin(), end(), new_block);
 
 				deallocate(m_data);
 				m_data = new_block;
@@ -166,8 +159,7 @@ namespace cpp {
 
 		constexpr void clear() noexcept
 		{
-			for (size_t i = 0; i < m_size; ++i)
-				destroy(m_data[i]);
+			std::for_each(begin(), end(), destroy);
 			m_size = 0;
 		}
 
@@ -202,12 +194,12 @@ namespace cpp {
 		{
 			auto new_block = allocate(count);
 
-			if (count > m_size) {
-				for (size_t i = 0; i < m_size; ++i)
-					new_block[i] = std::move(m_data[i]);
+			if (count > m_size)
+			{
+				std::move(begin(), end(), new_block);
 
 				for (size_t i = m_size; i < count; ++i)
-					new_block[i] = T{ };
+					new_block[i] = construct_in_place();
 			}
 			else
 				for (size_t i = 0; i < count; ++i)
@@ -225,11 +217,10 @@ namespace cpp {
 
 			if (count > m_size)
 			{
-				for (size_t i = 0; i < m_size; ++i)
-					new_block[i] = std::move(m_data[i]);
+				std::move(begin(), end(), new_block);
 
 				for (size_t i = m_size; i < count; ++i)
-					new_block[i] = T{ value };
+					new_block[i] = construct_in_place(value);
 			}
 			else
 				for (size_t i = 0; i < count; ++i)
@@ -251,12 +242,10 @@ namespace cpp {
 		{
 			if (this == &other) return *this;
 
-			reserve(other.m_capacity);
-			m_size = other.m_size;
-			m_capacity = other.m_capacity;
-
-			for (size_t i = 0; i < m_size; ++i)
-				m_data[i] = std::move(other.m_data[i]);
+			deallocate(m_data);
+			m_data = std::move(other.m_data);
+			m_size = std::move(other.m_size);
+			m_capacity = std::move(other.m_capacity);
 
 			return *this;
 		}
@@ -269,8 +258,7 @@ namespace cpp {
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
 
-			for (size_t i = 0; i < m_size; ++i)
-				m_data[i] = other.m_data[i];
+			std::copy(other.begin(), other.end(), m_data);
 
 			return *this;
 		}
@@ -284,19 +272,26 @@ namespace cpp {
 		//	return std::lexicographical_compare_three_way(this.begin(), this.end(), other.begin(), other.end());
 		//}
 	private:
-		static T* allocate(const size_t size)
+		constexpr static T* allocate(const size_t size)
 		{
 			auto mem = new T[size * sizeof(T)];
 			return mem;
 		}
-		static void deallocate(const T* p)
+		constexpr static void deallocate(const T* p)
 		{
 			delete[] p;
 		}
-
-		static void destroy(const T& p)
+		constexpr static void destroy(const T& p)
 		{
 			p.~T();
+		}
+		constexpr static T construct_in_place()
+		{
+			return T{ };
+		}
+		constexpr static T construct_in_place(const T& value)
+		{
+			return T{ value };
 		}
 
 		T* m_data = nullptr;
