@@ -118,8 +118,4 @@ namespace StringTests
 		str.shrink_to_fit();
 		EXPECT_EQ(str.capacity(), 4);
 	}
-	TEST(StringTest, max_size)
-	{
-		EXPECT_EQ(String::max_size(), 0xffffffffui32);
-	}
 }
