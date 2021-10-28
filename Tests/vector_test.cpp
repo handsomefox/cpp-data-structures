@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Vector.hpp"
+#include "../src/Vector.h"
 
 namespace VectorTests {
 	using namespace cpp;
@@ -50,9 +50,8 @@ namespace VectorTests {
 		int sum2 = 0;
 
 		for (const auto& elem : vec)
-		{
 			sum2 += elem;
-		}
+
 		EXPECT_EQ(sum, sum2);
 	}
 

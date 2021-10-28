@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Array.hpp"
+#include "../src/Array.h"
 
 namespace ArrayTests
 {
@@ -13,7 +13,7 @@ namespace ArrayTests
 	TEST(array_test, copy_constructor)
 	{
 		const Array<int, 2> arr{ 3,4 };
-		Array copied(arr);
+		Array<int, 2> copied(arr);
 		EXPECT_EQ(copied[0], 3);
 	}
 
