@@ -6,11 +6,11 @@
 
 int main()
 {
-	for (cpp::Array<int, 5> arr{ 1,2,3,4,5 }; const auto & element : arr)
-		std::cout << element << ' ';
+	for (cpp::Array<int, 5> arr{ 1, 2, 3, 4, 5 }; const auto& element: arr)
+	std::cout << element << ' ';
 
-	for (const cpp::Vector vec{ 1,2,3,4,5,6 }; const auto & element : vec)
-		std::cout << element << ' ';
+	for (const cpp::Vector vec{ 1, 2, 3, 4, 5, 6 }; const auto& element: vec)
+	std::cout << element << ' ';
 
 	const cpp::String str = "Hello world!";
 

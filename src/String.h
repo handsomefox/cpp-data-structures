@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+
 #include "Iterator.h"
 #include "StringHelpers.h"
 
@@ -8,9 +9,11 @@ namespace cpp
 {
 	class String
 	{
-	public:
+	 public:
 		static constexpr size_t npos = -1;
+
 		String() = default;
+
 		String(const char* other)
 		{
 			const auto capacity = StringHelpers::RequiredCapacity(other);
@@ -18,6 +21,7 @@ namespace cpp
 			Alloc(capacity);
 			StringHelpers::CopyStr(m_buf, size(), other);
 		}
+
 		String(const String& other)
 		{
 			const auto capacity = StringHelpers::RequiredCapacity(other.c_str());
@@ -25,35 +29,53 @@ namespace cpp
 			Alloc(capacity);
 			StringHelpers::CopyStr(m_buf, size(), other.c_str());
 		}
+
 		String(String&& other) noexcept
 		{
 			SetProps(other);
 			MoveToSelf(other.m_buf);
 		}
-		~String() { delete[] m_buf; }
 
-		char& at(const size_t pos) { return m_buf[pos]; }
-		[[nodiscard]] const char& at(const size_t pos) const { return m_buf[pos]; }
+		~String()
+		{
+			delete[] m_buf;
+		}
+
+		char& at(const size_t pos)
+		{
+			return m_buf[pos];
+		}
+
+		[[nodiscard]] const char& at(const size_t pos) const
+		{
+			return m_buf[pos];
+		}
 
 		char& back()
 		{
-			if (!empty()) return m_buf[length() - 1];
+			if (!empty())
+				return m_buf[length() - 1];
 			return m_buf[npos];
 		}
+
 		[[nodiscard]] char& back() const
 		{
-			if (!empty()) return m_buf[length() - 1];
+			if (!empty())
+				return m_buf[length() - 1];
 			return m_buf[npos];
 		}
 
 		[[nodiscard]] char& front() const
 		{
-			if (!empty()) return m_buf[0];
+			if (!empty())
+				return m_buf[0];
 			return m_buf[npos];
 		}
+
 		char& front()
 		{
-			if (!empty()) return m_buf[0];
+			if (!empty())
+				return m_buf[0];
 			return m_buf[npos];
 		}
 
@@ -74,6 +96,7 @@ namespace cpp
 			SetProps(capacity);
 			return *this;
 		}
+
 		String& append(const char* str)
 		{
 			const auto capacity = StringHelpers::RequiredCapacity(c_str(), str);
@@ -91,7 +114,9 @@ namespace cpp
 			SetProps(capacity);
 			return *this;
 		}
-		String& append(const String& str, const size_t subpos, const size_t sublen = npos)
+
+		String& append(const String& str, const size_t subpos,
+			const size_t sublen = npos)
 		{
 			const auto capacity = str.size() + sublen;
 			Alloc(capacity);
@@ -109,6 +134,7 @@ namespace cpp
 			delete[] temp;
 			return *this;
 		}
+
 		String& append(const char* str, const size_t n)
 		{
 			const auto capacity = size() + n;
@@ -127,6 +153,7 @@ namespace cpp
 			delete[] temp;
 			return *this;
 		}
+
 		String& append(const size_t n, const char c)
 		{
 			const auto temp = StringHelpers::AllocTempBuf(n + 1);
@@ -146,7 +173,10 @@ namespace cpp
 			return *this;
 		}
 
-		[[nodiscard]] bool empty() const { return length() == 0; }
+		[[nodiscard]] bool empty() const
+		{
+			return length() == 0;
+		}
 
 		void clear()
 		{
@@ -154,16 +184,40 @@ namespace cpp
 			m_length = 0;
 		}
 
-		[[nodiscard]] const char* c_str() const { return m_buf; }
+		[[nodiscard]] const char* c_str() const
+		{
+			return m_buf;
+		}
 
-		[[nodiscard]] size_t capacity() const { return m_capacity; }
-		size_t capacity() { return m_capacity; }
+		[[nodiscard]] size_t capacity() const
+		{
+			return m_capacity;
+		}
 
-		[[nodiscard]] size_t size() const { return m_size; }
-		size_t size() { return m_size; }
+		size_t capacity()
+		{
+			return m_capacity;
+		}
 
-		[[nodiscard]] size_t length() const { return m_length; }
-		size_t length() { return m_length; }
+		[[nodiscard]] size_t size() const
+		{
+			return m_size;
+		}
+
+		size_t size()
+		{
+			return m_size;
+		}
+
+		[[nodiscard]] size_t length() const
+		{
+			return m_length;
+		}
+
+		size_t length()
+		{
+			return m_length;
+		}
 
 		void shrink_to_fit()
 		{
@@ -178,7 +232,11 @@ namespace cpp
 			SetProps(size());
 			m_capacity = size();
 		}
-		static size_t max_size() { return SIZE_MAX; }
+
+		static size_t max_size()
+		{
+			return SIZE_MAX;
+		}
 
 		void resize(const size_t length)
 		{
@@ -203,6 +261,7 @@ namespace cpp
 			SetProps(capacity);
 			MoveToSelf(temp);
 		}
+
 		void resize(const size_t length, const char c)
 		{
 			if (length == this->length())
@@ -227,9 +286,16 @@ namespace cpp
 			SetProps(capacity);
 			MoveToSelf(temp);
 		}
-		void reserve(const size_t capacity = 0) { Alloc(capacity); }
 
-		void push_back(const char c) { append(1, c); }
+		void reserve(const size_t capacity = 0)
+		{
+			Alloc(capacity);
+		}
+
+		void push_back(const char c)
+		{
+			append(1, c);
+		}
 
 		String& replace(const size_t pos, size_t len, const char* substr)
 		{
@@ -237,7 +303,9 @@ namespace cpp
 			memcpy(m_buf + pos, substr, strlen(substr));
 			return *this;
 		}
-		String& replace(const size_t pos, size_t len, const String& str, size_t subpos, size_t sublen = npos)
+
+		String& replace(const size_t pos, size_t len, const String& str,
+			size_t subpos, size_t sublen = npos)
 		{
 			Alloc(length() + str.length() + 1);
 			memcpy(m_buf + pos, str.m_buf, str.length());
@@ -254,6 +322,7 @@ namespace cpp
 
 			return index;
 		}
+
 		size_t find(const char* s, size_t pos = 0) const
 		{
 			const auto result = StringHelpers::SubStr(m_buf, s);
@@ -264,6 +333,7 @@ namespace cpp
 
 			return index;
 		}
+
 		size_t find(const char* s, size_t pos, size_t n) const
 		{
 			const auto temp = StringHelpers::AllocTempBuf(n + 1);
@@ -281,6 +351,7 @@ namespace cpp
 
 			return index;
 		}
+
 		[[nodiscard]] size_t find(const char c, const size_t pos = 0) const
 		{
 			for (auto i = pos; i < length(); ++i)
@@ -301,6 +372,7 @@ namespace cpp
 
 			return *this;
 		}
+
 		String& operator=(const char* str)
 		{
 			if (m_buf == str)
@@ -313,6 +385,7 @@ namespace cpp
 
 			return *this;
 		}
+
 		constexpr String& operator=(String&& other) noexcept
 		{
 			if (this == &other)
@@ -323,11 +396,26 @@ namespace cpp
 
 			return *this;
 		}
-		char& operator[](const size_t index) const { return m_buf[index]; }
-		char& operator[](const size_t index) { return m_buf[index]; }
 
-		bool operator==(const String& rhs) const { return !strcmp(m_buf, rhs.m_buf); }
-		bool operator==(const char* rhs) const { return !strcmp(m_buf, rhs); }
+		char& operator[](const size_t index) const
+		{
+			return m_buf[index];
+		}
+
+		char& operator[](const size_t index)
+		{
+			return m_buf[index];
+		}
+
+		bool operator==(const String& rhs) const
+		{
+			return !strcmp(m_buf, rhs.m_buf);
+		}
+
+		bool operator==(const char* rhs) const
+		{
+			return !strcmp(m_buf, rhs);
+		}
 
 		String operator+(const String& rhs) const
 		{
@@ -341,6 +429,7 @@ namespace cpp
 			delete[] temp;
 			return *ret;
 		}
+
 		String operator+(const char* rhs) const
 		{
 			const auto capacity = StringHelpers::RequiredCapacity(c_str(), rhs);
@@ -353,6 +442,7 @@ namespace cpp
 			delete[] temp;
 			return *ret;
 		}
+
 		std::ostream& operator<<(std::ostream& os) const
 		{
 			os << this->m_buf;
@@ -360,10 +450,18 @@ namespace cpp
 		}
 
 		using ConstIterator = Iterator<const String, const char>;
-		[[nodiscard]] constexpr ConstIterator begin() const { return ConstIterator::begin(*this); }
-		[[nodiscard]] constexpr ConstIterator end() const { return ConstIterator::end(*this); }
 
-	private:
+		[[nodiscard]] constexpr ConstIterator begin() const
+		{
+			return ConstIterator::begin(*this);
+		}
+
+		[[nodiscard]] constexpr ConstIterator end() const
+		{
+			return ConstIterator::end(*this);
+		}
+
+	 private:
 		char* m_buf = nullptr;
 		size_t m_size{ 0 };
 		size_t m_length{ 0 };
@@ -383,21 +481,24 @@ namespace cpp
 				MoveToSelf(temp);
 			}
 		}
+
 		void SetProps(const size_t size)
 		{
 			m_size = size;
 			m_length = size - 1;
 		}
+
 		void SetProps(const String& string)
 		{
 			m_size = string.m_size;
 			m_length = string.m_length;
 			m_capacity = string.m_capacity;
 		}
+
 		void MoveToSelf(char* string)
 		{
 			delete[] m_buf;
 			m_buf = string;
 		}
 	};
-}
+}// namespace cpp

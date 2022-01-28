@@ -1,62 +1,116 @@
 #pragma once
 
-#include "pch.h"
 #include "Iterator.h"
 #include "VectorHelpers.h"
+#include "pch.h"
 
-namespace cpp {
+namespace cpp
+{
 
 	template<typename T>
 	class Vector
 	{
-	public:
+	 public:
 		constexpr Vector() = default;
+
 		constexpr explicit Vector(const size_t capacity)
 			: m_data(VectorHelpers<T>::Alloc(capacity)), m_capacity(capacity)
-		{ }
+		{
+		}
+
 		constexpr Vector(const Vector& other)
-			: m_data(VectorHelpers<T>::Alloc(other.m_capacity)), m_size(other.m_size), m_capacity(other.m_capacity)
+			: m_data(VectorHelpers<T>::Alloc(other.m_capacity)), m_size(other.m_size),
+			  m_capacity(other.m_capacity)
 		{
 			VectorHelpers<T>::Copy(m_data, other.m_data, other.m_size);
 		}
+
 		constexpr Vector(Vector&& other) noexcept
-			: m_data(std::move(other.m_data)), m_size(std::move(other.m_size)), m_capacity(std::move(other.m_capacity))
-		{}
+			: m_data(std::move(other.m_data)), m_size(std::move(other.m_size)),
+			  m_capacity(std::move(other.m_capacity))
+		{
+		}
+
 		constexpr Vector(const std::initializer_list<T>& list)
-			: m_data(VectorHelpers<T>::Alloc(list.size())), m_size(list.size()), m_capacity(m_size)
+			: m_data(VectorHelpers<T>::Alloc(list.size())), m_size(list.size()),
+			  m_capacity(m_size)
 		{
 			std::copy(list.begin(), list.end(), m_data);
 		}
 
-		~Vector() { VectorHelpers<T>::Dealloc(m_data); }
+		~Vector()
+		{
+			VectorHelpers<T>::Dealloc(m_data);
+		}
+
 		constexpr T& at(size_t index)
 		{
-			if (index > m_size) throw std::out_of_range("Vector subscript out of range");
+			if (index > m_size)
+				throw std::out_of_range("Vector subscript out of range");
 			return m_data[index];
 		}
 
 		[[nodiscard]] constexpr const T& at(size_t index) const
 		{
-			if (index > m_size) throw std::out_of_range("Vector subscript out of range");
+			if (index > m_size)
+				throw std::out_of_range("Vector subscript out of range");
 			return m_data[index];
 		}
 
-		constexpr T& operator[](size_t index) { return m_data[index]; }
-		constexpr const T& operator[](size_t index) const { return m_data[index]; }
+		constexpr T& operator[](size_t index)
+		{
+			return m_data[index];
+		}
 
-		constexpr T& front() { return m_data[0]; }
-		[[nodiscard]] constexpr T& front() const { return m_data[0]; }
-		constexpr T& back() { return m_data[m_size]; }
-		[[nodiscard]] constexpr T& back() const { return m_data[m_size]; }
+		constexpr const T& operator[](size_t index) const
+		{
+			return m_data[index];
+		}
 
-		constexpr T* data() { return m_data; }
-		[[nodiscard]] constexpr const T* data() const noexcept { return m_data; }
+		constexpr T& front()
+		{
+			return m_data[0];
+		}
 
-		[[nodiscard]] constexpr bool empty() const noexcept { return begin() == end(); }
+		[[nodiscard]] constexpr T& front() const
+		{
+			return m_data[0];
+		}
 
-		[[nodiscard]] constexpr size_t size() const noexcept { return m_size; }
+		constexpr T& back()
+		{
+			return m_data[m_size];
+		}
 
-		constexpr size_t max_size() { return std::distance(begin(), end()); }
+		[[nodiscard]] constexpr T& back() const
+		{
+			return m_data[m_size];
+		}
+
+		constexpr T* data()
+		{
+			return m_data;
+		}
+
+		[[nodiscard]] constexpr const T* data() const noexcept
+		{
+			return m_data;
+		}
+
+		[[nodiscard]] constexpr bool empty() const noexcept
+		{
+			return begin() == end();
+		}
+
+		[[nodiscard]] constexpr size_t size() const noexcept
+		{
+			return m_size;
+		}
+
+		constexpr size_t max_size()
+		{
+			return std::distance(begin(), end());
+		}
 
 		constexpr void reserve(const size_t new_capacity)
 		{
@@ -71,7 +125,10 @@ namespace cpp {
 			}
 		}
 
-		[[nodiscard]] constexpr size_t capacity() const noexcept { return m_capacity; }
+		[[nodiscard]] constexpr size_t capacity() const noexcept
+		{
+			return m_capacity;
+		}
 
 		constexpr void shrink_to_fit()
 		{
@@ -97,20 +154,25 @@ namespace cpp {
 			reserve(m_size + 1);
 			m_data[m_size++] = value;
 		}
+
 		constexpr void push_back(T&& value)
 		{
 			reserve(m_size + 1);
 			m_data[m_size++] = std::move(value);
 		}
-		template< typename... Args >
-		constexpr T& emplace_back(Args&&... args)
+
+		template<typename... Args>
+		constexpr T& emplace_back(Args&& ...args)
 		{
 			reserve(m_size + 1);
 			m_data[m_size] = T(std::forward<Args>(args)...);
 			return m_data[m_size++];
 		}
 
-		constexpr void pop_back() { VectorHelpers<T>::Destroy(m_data[m_size--]); }
+		constexpr void pop_back()
+		{
+			VectorHelpers<T>::Destroy(m_data[m_size--]);
+		}
 
 		constexpr void resize(const size_t count)
 		{
@@ -130,6 +192,7 @@ namespace cpp {
 			m_size = count;
 			m_capacity = count;
 		}
+
 		constexpr void resize(const size_t count, const T& value)
 		{
 			auto new_block = VectorHelpers<T>::Alloc(count);
@@ -151,11 +214,15 @@ namespace cpp {
 			m_capacity = count;
 		}
 
-		constexpr void swap(Vector& other) noexcept { std::swap(this->m_data, other.m_data); }
+		constexpr void swap(Vector& other) noexcept
+		{
+			std::swap(this->m_data, other.m_data);
+		}
 
 		constexpr Vector& operator=(Vector&& other) noexcept
 		{
-			if (this == &other) return *this;
+			if (this == &other)
+				return *this;
 
 			VectorHelpers<T>::Dealloc(m_data);
 			m_data = std::move(other.m_data);
@@ -164,9 +231,11 @@ namespace cpp {
 
 			return *this;
 		}
+
 		constexpr Vector& operator=(const Vector& other)
 		{
-			if (this == &other) return *this;
+			if (this == &other)
+				return *this;
 
 			reserve(other.m_capacity);
 			m_size = other.m_size;
@@ -180,15 +249,29 @@ namespace cpp {
 		using ConstIterator = Iterator<Vector const, T const>;
 		using It = Iterator<Vector, T>;
 
-		[[nodiscard]] ConstIterator begin() const { return ConstIterator::begin(*this); }
-		It begin() { return It::begin(*this); }
+		[[nodiscard]] ConstIterator begin() const
+		{
+			return ConstIterator::begin(*this);
+		}
 
-		[[nodiscard]] ConstIterator end() const { return ConstIterator::end(*this); }
-		It end() { return It::end(*this); }
+		It begin()
+		{
+			return It::begin(*this);
+		}
 
-	private:
+		[[nodiscard]] ConstIterator end() const
+		{
+			return ConstIterator::end(*this);
+		}
+
+		It end()
+		{
+			return It::end(*this);
+		}
+
+	 private:
 		T* m_data = nullptr;
 		size_t m_size = 0;
 		size_t m_capacity = 0;
 	};
-}
+}// namespace cpp
