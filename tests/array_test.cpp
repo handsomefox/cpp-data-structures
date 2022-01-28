@@ -1,49 +1,49 @@
-#include "pch.h"
 #include "../src/Array.h"
+#include "gtest/gtest.h"
 
 namespace ArrayTests
 {
 	using namespace cpp;
 	TEST(array_test, initializer_list)
 	{
-		Array<int, 2> arr{ 1,2 };
+		Array<int, 2> arr{ 1, 2 };
 		EXPECT_EQ(arr[0], 1);
 	}
 
 	TEST(array_test, copy_constructor)
 	{
-		const Array<int, 2> arr{ 3,4 };
+		const Array<int, 2> arr{ 3, 4 };
 		Array<int, 2> copied(arr);
 		EXPECT_EQ(copied[0], 3);
 	}
 
 	TEST(array_test, move_constructor)
 	{
-		const auto arr(Array<int, 3>{1, 2, 3});
+		const auto arr(Array<int, 3>{ 1, 2, 3 });
 		EXPECT_EQ(arr[0], 1);
 	}
 
 	TEST(array_test, at)
 	{
-		const Array<int, 3> arr{ 1,2,3 };
+		const Array<int, 3> arr{ 1, 2, 3 };
 		EXPECT_EQ(arr.at(0), 1);
 	}
 
 	TEST(array_test, front)
 	{
-		const Array<int, 3> arr{ 1,2,3 };
+		const Array<int, 3> arr{ 1, 2, 3 };
 		EXPECT_EQ(arr[0], arr.front());
 	}
 
 	TEST(array_test, back)
 	{
-		const Array<int, 3> arr{ 1,2,3 };
+		const Array<int, 3> arr{ 1, 2, 3 };
 		EXPECT_EQ(arr[2], arr.back());
 	}
 
 	TEST(array_test, iterators)
 	{
-		Array<int, 3> arr{ 1,2,3 };
+		Array<int, 3> arr{ 1, 2, 3 };
 		constexpr int sum = 6;
 		int sum2 = 0;
 		for (const auto elem : arr)
@@ -73,14 +73,14 @@ namespace ArrayTests
 
 	TEST(array_test, move_assignment)
 	{
-		auto arr = Array<int, 3>({ 1,2,3 });
+		auto arr = Array<int, 3>({ 1, 2, 3 });
 		EXPECT_EQ(arr.at(0), 1);
 	}
 
 	TEST(array_test, copy_assignment)
 	{
-		Array<int, 3> arr1{ 1,2,3 };
+		Array<int, 3> arr1{ 1, 2, 3 };
 		Array<int, 3> arr2 = arr1;
 		EXPECT_EQ(arr2.at(0), arr1.at(0));
 	}
-}
+}// namespace ArrayTests

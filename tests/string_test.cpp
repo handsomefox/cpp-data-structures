@@ -1,6 +1,5 @@
-#include "pch.h"
-
 #include "../src/String.h"
+#include "gtest/gtest.h"
 
 namespace StringTests
 {
@@ -118,4 +117,4 @@ namespace StringTests
 		str.shrink_to_fit();
 		EXPECT_EQ(str.capacity(), 4);
 	}
-}
+}// namespace StringTests

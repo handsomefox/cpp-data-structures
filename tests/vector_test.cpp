@@ -1,50 +1,50 @@
-#include "pch.h"
-
 #include "../src/Vector.h"
+#include "gtest/gtest.h"
 
-namespace VectorTests {
+namespace VectorTests
+{
 	using namespace cpp;
 	TEST(vector_test, initializer_list)
 	{
-		Vector<int> vec{ 1,2 };
+		Vector<int> vec{ 1, 2 };
 
 		EXPECT_EQ(vec[0], 1);
 	}
 
 	TEST(vector_test, copy_constructor)
 	{
-		const Vector<int> vec{ 3,4 };
+		const Vector<int> vec{ 3, 4 };
 		Vector<int> copied(vec);
 		EXPECT_EQ(copied[0], 3);
 	}
 
 	TEST(vector_test, move_constructor)
 	{
-		const Vector<int> vec(Vector<int>{1, 2, 3});
+		const Vector<int> vec(Vector<int>{ 1, 2, 3 });
 		EXPECT_EQ(vec[0], 1);
 	}
 
 	TEST(vector_test, at)
 	{
-		const Vector<int> vec{ 1,2,3 };
+		const Vector<int> vec{ 1, 2, 3 };
 		EXPECT_EQ(vec.at(0), 1);
 	}
 
 	TEST(vector_test, front)
 	{
-		const Vector<int> vec{ 1,2,3 };
+		const Vector<int> vec{ 1, 2, 3 };
 		EXPECT_EQ(vec[0], vec.front());
 	}
 
 	TEST(vector_test, back)
 	{
-		const Vector<int> vec{ 1,2,3 };
+		const Vector<int> vec{ 1, 2, 3 };
 		EXPECT_NE(vec[2], vec.back());
 	}
 
 	TEST(vector_test, iterators)
 	{
-		const Vector<int> vec{ 1,2,3 };
+		const Vector<int> vec{ 1, 2, 3 };
 
 		constexpr int sum = 6;
 		int sum2 = 0;
@@ -87,7 +87,7 @@ namespace VectorTests {
 
 	TEST(vector_test, shrink_to_fit)
 	{
-		Vector<int> vec{ 1,2 };
+		Vector<int> vec{ 1, 2 };
 		vec.reserve(10);
 		vec.shrink_to_fit();
 		EXPECT_EQ(vec.capacity(), 2);
@@ -96,7 +96,7 @@ namespace VectorTests {
 
 	TEST(vector_test, clear)
 	{
-		Vector<int> vec{ 1,2,3 };
+		Vector<int> vec{ 1, 2, 3 };
 		vec.clear();
 		EXPECT_EQ(vec.size(), 0);
 		EXPECT_EQ(vec.capacity(), 3);
@@ -153,7 +153,7 @@ namespace VectorTests {
 
 	TEST(vector_test, resize_negative)
 	{
-		Vector<int> vec{ 1,2,3,4,5 };
+		Vector<int> vec{ 1, 2, 3, 4, 5 };
 		vec.resize(2);
 		EXPECT_EQ(vec.capacity(), 2);
 		EXPECT_EQ(vec.at(1), 2);
@@ -170,8 +170,8 @@ namespace VectorTests {
 
 	TEST(vector_test, swap)
 	{
-		Vector<int> vec1{ 1,2,3 };
-		Vector<int> vec2{ 4,5,6 };
+		Vector<int> vec1{ 1, 2, 3 };
+		Vector<int> vec2{ 4, 5, 6 };
 		vec1.swap(vec2);
 		EXPECT_EQ(vec1.at(0), 4);
 		EXPECT_EQ(vec2.at(0), 1);
@@ -179,14 +179,14 @@ namespace VectorTests {
 
 	TEST(vector_test, move_assignment)
 	{
-		Vector<int> vec = Vector<int>({ 1,2,3 });
+		Vector<int> vec = Vector<int>({ 1, 2, 3 });
 		EXPECT_EQ(vec.at(0), 1);
 	}
 
 	TEST(vector_test, copy_assignment)
 	{
-		Vector<int> vec1{ 1,2,3 };
+		Vector<int> vec1{ 1, 2, 3 };
 		Vector<int> vec2 = vec1;
 		EXPECT_EQ(vec2.at(0), vec1.at(0));
 	}
-}
+}// namespace VectorTests
