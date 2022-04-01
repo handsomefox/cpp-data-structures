@@ -4,7 +4,6 @@ set(HEADER_FILES
         Array.h
         Iterator.h
         String.h
-        StringHelpers.h
         Vector.h
         VectorHelpers.h
         )

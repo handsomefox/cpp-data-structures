@@ -17,6 +17,9 @@ namespace StringTests
 		const String str2 = str1;
 
 		EXPECT_STREQ(str1.c_str(), str2.c_str());
+		EXPECT_STREQ(str1.c_str(), "Hey!");
+		EXPECT_STREQ(str2.c_str(), "Hey!");
+
 	}
 	TEST(StringTest, MoveConstructor)
 	{
@@ -99,7 +102,7 @@ namespace StringTests
 	TEST(StringTest, size)
 	{
 		String str = "1";
-		EXPECT_EQ(2, str.size());
+		EXPECT_EQ(1, str.size());
 	}
 	TEST(StringTest, length)
 	{
