@@ -101,10 +101,6 @@ namespace VectorTests
 		EXPECT_EQ(vec.size(), 0);
 		EXPECT_EQ(vec.capacity(), 3);
 		EXPECT_EQ(vec.at(0), 1);
-
-		Vector<std::string> vec_string{ "123" };
-		vec_string.clear();
-		EXPECT_STREQ(vec_string.data()->c_str(), "");
 	}
 
 	TEST(vector_test, push_back)

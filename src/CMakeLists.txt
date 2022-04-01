@@ -5,7 +5,6 @@ set(HEADER_FILES
         Iterator.h
         String.h
         Vector.h
-        VectorHelpers.h
         )
 set(SOURCE_FILES
         main.cpp

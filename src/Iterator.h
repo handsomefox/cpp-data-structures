@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 namespace cpp
 {
 	template<typename Container, typename ValueType>
