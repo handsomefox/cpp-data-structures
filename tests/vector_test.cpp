@@ -39,7 +39,7 @@ namespace VectorTests
 	TEST(vector_test, back)
 	{
 		const Vector<int> vec{ 1, 2, 3 };
-		EXPECT_NE(vec[2], vec.back());
+		EXPECT_EQ(vec[2], vec.back());
 	}
 
 	TEST(vector_test, iterators)

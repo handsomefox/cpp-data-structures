@@ -14,176 +14,187 @@ namespace cpp
 		// Constructs an empty container, with no elements.
 		constexpr Vector() = default;
 
-		// Constructs an empty container, with no elements and required capacity.
+		// Constructs an empty container, with no elements and required cap.
 		constexpr explicit Vector(const size_t capacity)
-			: m_data(Alloc(capacity)), m_capacity(capacity)
+			: _data({new T[capacity], 0, capacity})
 		{
 		}
 
 		// Constructs a container with a copy of each of the elements in x, in the same order.
 		constexpr Vector(const Vector& other)
-			: m_data(Alloc(other.m_capacity)), m_size(other.m_size),
-			  m_capacity(other.m_capacity)
 		{
-			Copy(m_data, other.m_data, other.m_size);
+			this->reserve(other.capacity());
+
+			for (auto const& e : other)
+				this->push_back(e);
 		}
 
 		// Constructs a container that acquires the elements of x.
 		constexpr Vector(Vector&& other) noexcept
-			: m_data(std::move(other.m_data)), m_size(std::move(other.m_size)),
-			  m_capacity(std::move(other.m_capacity))
+			: _data(std::move(other._data))
 		{
 		}
 
 		// Constructs a container with a copy of each of the elements in il, in the same order.
 		constexpr Vector(const std::initializer_list<T>& list)
-			: m_data(Alloc(list.size())), m_size(list.size()),
-			  m_capacity(m_size)
 		{
-			std::copy(list.begin(), list.end(), m_data);
+			auto const& list_data = std::data(list);
+			const auto list_size = list.size();
+
+			_data = {new T[list_size], list_size, list_size};
+
+			for (size_t i = 0; i < list_size; ++i)
+				_data.p[i] = list_data[i];
 		}
 
 		// Destroys the container object.
 		~Vector()
 		{
-			Dealloc(m_data);
+			delete[] _data.p;
 		}
 
 		// Returns a reference to the element at position n in the vector.
-		[[nodiscard]] constexpr T& at(size_t index)
+		constexpr T& at(size_t index)
 		{
-			if (index > m_size)
+			if (index > _data.sz)
 				throw std::out_of_range("Vector subscript out of range");
-			return m_data[index];
+			return _data.p[index];
 		}
 
 		// Returns a reference to the element at position n in the vector.
-		[[nodiscard]] constexpr const T& at(size_t index) const
+		constexpr const T& at(size_t index) const
 		{
-			if (index > m_size)
+			if (index > _data.sz)
 				throw std::out_of_range("Vector subscript out of range");
-			return m_data[index];
+			return _data.p[index];
 		}
 
 		// Returns a reference to the element at position n in the vector container.
-		[[nodiscard]] constexpr T& operator[](size_t index)
+		constexpr T& operator[](size_t index)
 		{
-			return m_data[index];
+			return _data.p[index];
 		}
 
 		// Returns a reference to the element at position n in the vector container.
-		[[nodiscard]] constexpr const T& operator[](size_t index) const
+		constexpr const T& operator[](size_t index) const
 		{
-			return m_data[index];
+			return _data.p[index];
 		}
 
 		// Returns a reference to the first element in the vector.
-		[[nodiscard]] constexpr T& front()
+		constexpr T& front()
 		{
-			return m_data[0];
+			return _data.p[0];
 		}
 
 		// Returns a reference to the first element in the vector.
-		[[nodiscard]] constexpr T& front() const
+		constexpr T& front() const
 		{
-			return m_data[0];
+			return _data.p[0];
 		}
 
 		// Returns a reference to the last element in the vector.
-		[[nodiscard]] constexpr T& back()
+		constexpr T& back()
 		{
-			return m_data[m_size];
+			return _data.p[_data.sz - 1];
 		}
 
 		// Returns a reference to the last element in the vector.
-		[[nodiscard]] constexpr T& back() const
+		constexpr T& back() const
 		{
-			return m_data[m_size];
+			return _data.p[_data.sz - 1];
 		}
 
 		// Returns a direct pointer to the memory array used internally by the vector to store its owned elements.
-		[[nodiscard]] constexpr T* data()
+		constexpr T* data()
 		{
-			return m_data;
+			return _data.p;
 		}
 
 		// Returns a direct pointer to the memory array used internally by the vector to store its owned elements.
-		[[nodiscard]] constexpr const T* data() const noexcept
+		constexpr const T* data() const noexcept
 		{
-			return m_data;
+			return _data.p;
 		}
 
 		// Returns whether the vector is empty (i.e. whether its size is 0).
-		[[nodiscard]] constexpr bool empty() const noexcept
+		constexpr bool empty() const noexcept
 		{
 			return begin() == end();
 		}
 
 		// Returns the number of elements in the vector.
-		[[nodiscard]] constexpr size_t size() const noexcept
+		constexpr size_t size() const noexcept
 		{
-			return m_size;
+			return _data.sz;
 		}
 
 		// Returns the maximum number of elements that the vector can hold.
-		[[nodiscard]] constexpr size_t max_size()
+		constexpr size_t max_size()
 		{
 			return std::distance(begin(), end());
 		}
 
-		// Requests that the vector capacity be at least enough to contain n elements.
+		// Requests that the vector cap be at least enough to contain n elements.
 		constexpr void reserve(const size_t new_capacity)
 		{
-			if (new_capacity > m_capacity)
-			{
-				auto new_block = Alloc(new_capacity);
-				Move(new_block, m_data, m_size);
+			if (_data.cap > new_capacity)
+				return;
 
-				Dealloc(m_data);
-				m_data = new_block;
-				m_capacity = new_capacity;
-			}
+			auto block = new T[new_capacity];
+
+			for (size_t i = 0; i < _data.sz; ++i)
+				block[i] = std::move(_data.p[i]);
+
+			delete[] _data.p;
+			_data = {block, _data.sz, new_capacity};
 		}
 
 		// Returns the size of the storage space currently allocated for the vector, expressed in terms of elements.
-		[[nodiscard]] constexpr size_t capacity() const noexcept
+		constexpr size_t capacity() const noexcept
 		{
-			return m_capacity;
+			return _data.cap;
 		}
 
-		// Requests the container to reduce its capacity to fit its size.
+		// Requests the container to reduce its cap to fit its size.
 		constexpr void shrink_to_fit()
 		{
-			if (m_capacity > m_size)
-			{
-				auto new_block = Alloc(m_size);
-				Move(new_block, m_data, m_size);
+			if (_data.cap < _data.sz)
+				return;
 
-				Dealloc(m_data);
-				m_data = new_block;
-				m_capacity = m_size;
-			}
+			auto block = new T[_data.sz];
+			for (size_t i = 0; i < _data.sz; ++i)
+				block[i] = std::move(_data.p[i]);
+
+			delete[] _data.p;
+			_data = {block, _data.sz, _data.sz};
 		}
 
 		// Removes all elements from the vector (which are destroyed), leaving the container with a size of 0.
 		constexpr void clear() noexcept
 		{
-			std::for_each(begin(), end(), Destroy);
-			m_size = 0;
+			std::for_each(begin(), end(), [&](T& t) {
+				t.~T();
+			});
+			_data.sz = 0;
 		}
 
 		// Adds a new element at the end of the vector, after its current last element. The content of val is copied to the new element.
 		constexpr void push_back(const T& value)
 		{
-			reserve(m_size + 1);
-			m_data[m_size++] = value;
+			if (_data.cap == _data.sz)
+				reserve(1 + _data.sz * 2);
+
+			_data.p[_data.sz++] = value;
 		}
 
 		// Adds a new element at the end of the vector, after its current last element. The content of val is moved to the new element.
 		constexpr void push_back(T&& value)
 		{
-			reserve(m_size + 1);
-			m_data[m_size++] = std::move(value);
+			if (_data.cap == _data.sz)
+				reserve(1 + _data.sz * 2);
+
+			_data.p[_data.sz++] = std::move(value);
 		}
 
 		// Inserts a new element at the end of the vector, right after its current last element.
@@ -191,44 +202,51 @@ namespace cpp
 		template<typename... Args>
 		constexpr T& emplace_back(Args&&... args)
 		{
-			reserve(m_size + 1);
-			m_data[m_size] = T(std::forward<Args>(args)...);
-			return m_data[m_size++];
+			if (_data.cap == _data.sz)
+				reserve(1 + _data.sz * 2);
+
+			_data.p[_data.sz] = T(std::forward<Args>(args)...);
+			return _data.p[_data.sz++];
 		}
 
 		// Removes the last element in the vector, effectively reducing the container size by one.
 		constexpr void pop_back()
 		{
-			Destroy(m_data[m_size--]);
+			_data.p[_data.sz--].~T();
 		}
 
 		// Resizes the container so that it contains n elements.
 		// If value is not specified, the default constructor is used instead.
 		constexpr void resize(const size_t count, const T& value = {})
 		{
-			auto new_block = Alloc(count);
+			if (count == _data.sz)
+				return;
 
-			if (count > m_size)
+			auto buffer = new T[count];
+
+			if (count > _data.sz)
 			{
-				Move(new_block, m_data, m_size);
+				for (size_t i = 0; i < _data.sz; ++i)
+					buffer[i] = std::move(_data.p[i]);
 
-				for (size_t i = m_size; i < count; ++i)
-					new_block[i] = Construct(value);
+				for (size_t i = _data.sz; i < count; ++i)
+					buffer[i] = value;
 			}
 			else
-				Move(new_block, m_data, count);
+			{
+				for (size_t i = 0; i < count; ++i)
+					buffer[i] = std::move(_data.p[i]);
+			}
 
-			Dealloc(m_data);
+			delete[] _data.p;
 
-			m_data = new_block;
-			m_size = count;
-			m_capacity = count;
+			_data = {buffer, count, count};
 		}
 
 		// Exchanges the content of the container by the content of x, which is another vector object of the same type. Sizes may differ.
 		constexpr void swap(Vector& other) noexcept
 		{
-			std::swap(this->m_data, other.m_data);
+			std::swap(this->_data, other._data);
 		}
 
 		// Assigns new contents to the container, replacing its current contents, and modifying its size accordingly.
@@ -237,11 +255,9 @@ namespace cpp
 			if (this == &other)
 				return *this;
 
-			Dealloc(m_data);
-			m_data = std::move(other.m_data);
-			m_size = std::move(other.m_size);
-			m_capacity = std::move(other.m_capacity);
+			delete[] _data.p;
 
+			_data = std::move(other._data);
 			return *this;
 		}
 
@@ -252,10 +268,10 @@ namespace cpp
 				return *this;
 
 			reserve(other.m_capacity);
-			m_size = other.m_size;
-			m_capacity = other.m_capacity;
+			_data.sz = other.m_size;
+			_data.cap = other.m_capacity;
 
-			std::copy(other.begin(), other.end(), m_data);
+			std::copy(other.begin(), other.end(), _data.p);
 
 			return *this;
 		}
@@ -263,84 +279,32 @@ namespace cpp
 		using ConstIterator = Iterator<Vector const, T const>;
 		using It = Iterator<Vector, T>;
 
-		[[nodiscard]] ConstIterator begin() const
+		ConstIterator begin() const
 		{
 			return ConstIterator::begin(*this);
 		}
 
-		[[nodiscard]] It begin()
+		It begin()
 		{
 			return It::begin(*this);
 		}
 
-		[[nodiscard]] ConstIterator end() const
+		ConstIterator end() const
 		{
 			return ConstIterator::end(*this);
 		}
 
-		[[nodiscard]] It end()
+		It end()
 		{
 			return It::end(*this);
 		}
 
 	private:
-		T* m_data = nullptr;
-		size_t m_size = 0;
-		size_t m_capacity = 0;
-
-	private:
-		inline static void Move(T* dest, T* src, const size_t count)
-		{
-			if constexpr (std::is_trivial_v<T>)
-				memmove_s(dest, count * sizeof(T), src, count * sizeof(T));
-
-			for (size_t i = 0; i < count; ++i)
-			{
-				if (dest <= src)
-					new (&dest[i]) T(std::move(src[i]));
-				else
-					new (&dest[count - i - 1]) T(std::move(src[count - i - 1]));
-			}
-		}
-
-		inline static void Copy(T* dest, const T* src, const size_t count)
-		{
-			if constexpr (std::is_trivial_v<T>)
-				memcpy_s(dest, count * sizeof(T), src, count * sizeof(T));
-
-			for (size_t i = 0; i < count; ++i)
-			{
-				if (dest <= src)
-					new (&dest[i]) T(src[i]);
-				else
-					new (&dest[count - i - 1]) T(src[count - i - 1]);
-			}
-		}
-
-		inline constexpr static T* Alloc(const size_t size)
-		{
-			auto mem = new T[size * sizeof(T)];
-			return mem;
-		}
-
-		inline constexpr static void Dealloc(const T* p)
-		{
-			delete[] p;
-		}
-
-		inline constexpr static void Destroy(const T& p)
-		{
-			p.~T();
-		}
-
-		inline constexpr static T Construct()
-		{
-			return T{};
-		}
-
-		inline constexpr static T Construct(const T& value)
-		{
-			return T{value};
-		}
+		struct VectorData {
+			T* p = nullptr;
+			size_t sz = 0;
+			size_t cap = 0;
+		};
+		VectorData _data{};
 	};
 }// namespace cpp
